@@ -1,5 +1,5 @@
 import React from 'react';
-import {Image, StyleSheet, View} from 'react-native';
+import {Image, StatusBar, StyleSheet, View} from 'react-native';
 import {Images} from '../../../../assets/images';
 import CustomText from '../../../../components/CustomText';
 import {COLORS} from '../../../../utils/COLORS';
@@ -23,8 +23,7 @@ export default HomeHeader;
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: 30,
-    paddingTop: 20,
+    marginTop: StatusBar.currentHeight,
     paddingHorizontal: 25,
     flexDirection: 'row',
     alignItems: 'center',

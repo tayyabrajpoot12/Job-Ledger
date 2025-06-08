@@ -15,6 +15,7 @@ import EmployeeTasks from '../screens/Main/EmployeeTasks';
 import {get} from '../Services/ApiRequest';
 import {setUserData} from '../store/reducer/usersSlice';
 import {COLORS} from '../utils/COLORS';
+import fonts from '../assets/fonts';
 
 const Tab = createBottomTabNavigator();
 
@@ -59,7 +60,7 @@ const TabStack = () => {
         tabBarActiveTintColor: COLORS.primaryColor,
         tabBarInactiveTintColor: '#000000',
         tabBarStyle: [styles.tabBarStyle],
-        tabBarShowLabel: false,
+        tabBarLabelStyle: styles.labelStyle,
         headerShown: false,
         tabBarHideOnKeyboard: true,
       })}>
@@ -90,6 +91,7 @@ const TabStack = () => {
               family={'FontAwesome5'}
             />
           ),
+          tabBarLabel: 'Projects',
         }}
         name={'EmployeeTasks'}
         component={EmployeeTasks}
@@ -122,9 +124,13 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   tabBarStyle: {
-    height: 80,
+    height: 75,
     backgroundColor: COLORS.white,
-    alignItems: 'flex-end',
-    paddingTop: 10,
+    paddingTop: 8,
+  },
+  labelStyle: {
+    fontFamily: fonts.medium,
+    fontSize: 11,
+    marginTop: 5,
   },
 });

@@ -1,5 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {StatusBar, StyleSheet, TouchableOpacity, View} from 'react-native';
 import fonts from '../assets/fonts';
 import {COLORS} from '../utils/COLORS';
 import CustomText from './CustomText';
@@ -41,10 +41,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: 20,
-    marginTop: 40,
     marginBottom: 10,
     justifyContent: 'center',
     paddingVertical: 10,
+    marginTop: StatusBar.currentHeight,
   },
   back: {
     width: 35,
@@ -53,5 +53,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     left: 20,
+    top: 7.5,
   },
 });

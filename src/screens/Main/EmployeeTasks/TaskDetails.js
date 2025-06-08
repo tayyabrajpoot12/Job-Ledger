@@ -1,7 +1,7 @@
 /* eslint-disable eqeqeq */
 /* eslint-disable react-native/no-inline-styles */
 import {StyleSheet, Dimensions, View, Animated} from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import Header from '../../../components/Header';
 import ImageFast from '../../../components/ImageFast';
@@ -15,32 +15,89 @@ import Icons from '../../../components/Icons';
 import CustomButton from '../../../components/CustomButton';
 
 const {width} = Dimensions.get('screen');
-const images = [Images.dummy, Images.dummy, Images.dummy];
 
 const TaskDetails = () => {
   const {params} = useRoute();
+  const intervalRef = useRef(null);
 
   const task = params?.task;
   const [active, setActive] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const [timer, setTimer] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [timeSummary, setTimeSummary] = useState([]);
+  const [punchInTime, setPunchInTime] = useState(null);
+
+  const images = task?.images || [Images.dummy];
+
+  useEffect(() => {
+    if (isRunning) {
+      intervalRef.current = setInterval(() => {
+        setTimer(prevTimer => prevTimer + 1);
+      }, 1000);
+    } else {
+      clearInterval(intervalRef.current);
+    }
+
+    return () => clearInterval(intervalRef.current);
+  }, [isRunning]);
+
+  const formatTimer = seconds => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handlePunchIn = () => {
+    const now = moment();
+    setPunchInTime(now);
+    setTimer(0);
+    setIsRunning(true);
+    setActive(2);
+  };
+
+  const handlePunchOut = () => {
+    const now = moment();
+    const totalSeconds = timer;
+
+    const summaryEntry = {
+      id: Date.now(),
+      date: punchInTime.format('DD MMM'),
+      timeIn: punchInTime.format('HH:mm'),
+      timeOut: now.format('HH:mm'),
+      total: formatTimer(totalSeconds),
+      totalSeconds: totalSeconds,
+    };
+
+    setTimeSummary(prev => [summaryEntry, ...prev]);
+    setIsRunning(false);
+    setTimer(0);
+    setPunchInTime(null);
+    setActive(1);
+  };
+
   const color =
-    task?.status === 'Active'
+    task?.status === 'active'
       ? COLORS.green
-      : task?.status === 'On Hold'
+      : task?.status === 'on-hold'
       ? COLORS.yellow
       : COLORS.purple;
 
   const bg =
-    task?.status === 'Active'
+    task?.status === 'active'
       ? COLORS.lightGreen
-      : task?.status === 'On Hold'
+      : task?.status === 'on-hold'
       ? COLORS.lightYellow
       : COLORS.lightPurple;
 
   return (
     <ScreenWrapper
-      headerUnScrollable={() => <Header title={'Project Details'} />}>
+      headerUnScrollable={() => <Header title={'Project Details'} />}
+      scrollEnabled>
       <View>
         <Animated.FlatList
           data={images}
@@ -92,11 +149,12 @@ const TaskDetails = () => {
         />
         <View style={[styles.status, {backgroundColor: bg}]}>
           <CustomText
-            fontSize={12}
             color={color}
-            label={task?.status}
+            fontSize={12}
             alignSelf={'center'}
             fontFamily={fonts.medium}
+            textTransform={'capitalize'}
+            label={' ' + task?.status + ' '}
           />
         </View>
       </View>
@@ -202,13 +260,33 @@ const TaskDetails = () => {
           />
         </View>
       </View>
+
+      {(isRunning || timer > 0) && (
+        <View style={styles.timerContainer}>
+          <CustomText
+            label="Current Session"
+            fontFamily={fonts.medium}
+            color={COLORS.primaryColor}
+            alignSelf={'center'}
+          />
+          <CustomText
+            marginTop={5}
+            fontSize={17}
+            alignSelf={'center'}
+            color={COLORS.green}
+            label={formatTimer(timer)}
+            fontFamily={fonts.semiBold}
+          />
+        </View>
+      )}
+
       {active === 1 ? (
         <CustomButton
           height={45}
           marginTop={20}
           borderRadius={30}
           title={'Punch In'}
-          onPress={() => setActive(2)}
+          onPress={handlePunchIn}
         />
       ) : (
         <CustomButton
@@ -216,9 +294,10 @@ const TaskDetails = () => {
           marginTop={20}
           borderRadius={30}
           title={'Punch Out'}
-          onPress={() => setActive(1)}
+          onPress={handlePunchOut}
         />
       )}
+
       <CustomText
         marginTop={15}
         label="Time Summary"
@@ -227,23 +306,76 @@ const TaskDetails = () => {
       />
 
       <View style={styles.descBG}>
-        <View style={styles.width20}>
+        <View style={styles.width25}>
           <CustomText label="Date" fontFamily={fonts.medium} fontSize={12} />
         </View>
-        <View style={styles.width20}>
+        <View style={styles.width25}>
           <CustomText label="Time In" fontFamily={fonts.medium} fontSize={12} />
         </View>
-        <View style={styles.width20}>
+        <View style={styles.width25}>
           <CustomText
             label="Time Out"
             fontFamily={fonts.medium}
             fontSize={12}
           />
         </View>
-        <View style={styles.width20}>
-          <CustomText label="Total" fontFamily={fonts.medium} fontSize={12} />
+        <View style={styles.width25}>
+          <CustomText
+            fontSize={12}
+            label="Total Time"
+            fontFamily={fonts.medium}
+          />
         </View>
       </View>
+
+      {timeSummary.map(entry => (
+        <View key={entry.id} style={styles.summaryRow}>
+          <View style={styles.width25}>
+            <CustomText
+              label={entry.date}
+              fontFamily={fonts.regular}
+              fontSize={11}
+              color={COLORS.inputLabel}
+            />
+          </View>
+          <View style={styles.width25}>
+            <CustomText
+              label={entry.timeIn}
+              fontFamily={fonts.regular}
+              fontSize={11}
+              color={COLORS.inputLabel}
+            />
+          </View>
+          <View style={styles.width25}>
+            <CustomText
+              label={entry.timeOut}
+              fontFamily={fonts.regular}
+              fontSize={11}
+              color={COLORS.inputLabel}
+            />
+          </View>
+          <View style={styles.width25}>
+            <CustomText
+              label={entry.total}
+              fontFamily={fonts.medium}
+              fontSize={11}
+              color={COLORS.primaryColor}
+            />
+          </View>
+        </View>
+      ))}
+
+      {timeSummary.length === 0 && (
+        <View style={styles.noDataContainer}>
+          <CustomText
+            fontSize={12}
+            color={COLORS.gray1}
+            alignSelf={'center'}
+            fontFamily={fonts.medium}
+            label="No time entries yet"
+          />
+        </View>
+      )}
     </ScreenWrapper>
   );
 };
@@ -262,6 +394,10 @@ const styles = StyleSheet.create({
   },
   width20: {
     width: '20%',
+    alignItems: 'center',
+  },
+  width25: {
+    width: '25%',
     alignItems: 'center',
   },
   sliderItem: {
@@ -305,18 +441,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 7,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     height: 30,
   },
   descBG: {
     backgroundColor: '#003F7D14',
     paddingHorizontal: 15,
-    paddingVertical: 5,
+    paddingVertical: 8,
     borderRadius: 5,
     marginBottom: 5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 10,
+  },
+  timerContainer: {
+    alignItems: 'center',
+    marginTop: 15,
+    paddingVertical: 15,
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.lightGray,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    backgroundColor: COLORS.white,
+    marginBottom: 2,
+    borderRadius: 3,
+  },
+  noDataContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    marginTop: 5,
   },
 });

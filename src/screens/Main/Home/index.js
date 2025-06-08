@@ -10,6 +10,7 @@ import {get} from '../../../Services/ApiRequest';
 import {COLORS} from '../../../utils/COLORS';
 import HomeHeader from './molecules/Header';
 import HomeTaskCard from './molecules/HomeTaskCard';
+import SkeletonCard from './molecules/SkeletonCard';
 
 const chartConfig = {
   backgroundColor: COLORS.primaryColor,
@@ -40,55 +41,11 @@ const earningData = [
   Math.random() * 100,
 ];
 
-const homeTaskData = [
-  {
-    _id: 1,
-    name: 'Client Onboarding',
-    status: 'Active',
-    budget: 450,
-    address: '123 Business Rd, Toronto, ON',
-  },
-  {
-    _id: 2,
-    name: 'Marketing Campaign Setup',
-    status: 'On Hold',
-    budget: 800,
-    address: '456 Media St, Montreal, QC',
-  },
-  {
-    _id: 3,
-    name: 'Product Demo Preparation',
-    status: 'Planing',
-    budget: 300,
-    address: '789 Tech Ave, Vancouver, BC',
-  },
-  {
-    _id: 4,
-    name: 'Quarterly Report Draft',
-    status: 'Active',
-    budget: 200,
-    address: '321 Finance Blvd, Calgary, AB',
-  },
-  {
-    _id: 5,
-    name: 'Team Training Session',
-    status: 'On Hold',
-    budget: 600,
-    address: '654 HR Ln, Edmonton, AB',
-  },
-  {
-    _id: 6,
-    name: 'System Upgrade Testing',
-    status: 'Planing',
-    budget: 1000,
-    address: '987 IT Park, Ottawa, ON',
-  },
-];
-
 const Home = () => {
   const navigation = useNavigation();
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
+  const [homeTaskData, setHomeTaskData] = useState([]);
 
   const data = [
     {
@@ -116,10 +73,16 @@ const Home = () => {
       try {
         setLoading(true);
         const url = `getMyDashboard/${token}`;
+        const taslUrl = `getMyProjects/${token}`;
 
         const res = await get(url);
+        const taskResponse = await get(taslUrl);
+
         if (res.data?.result) {
           setStats(res.data?.data?.projectStats);
+        }
+        if (taskResponse.data?.result) {
+          setHomeTaskData(taskResponse.data?.data);
         }
         setLoading(false);
       } catch (error) {
@@ -132,7 +95,8 @@ const Home = () => {
   return (
     <ScreenWrapper
       headerUnScrollable={() => <HomeHeader />}
-      paddingHorizontal={0.1}>
+      paddingHorizontal={0.1}
+      scrollEnabled>
       <View style={{paddingHorizontal: 20}}>
         <FlatList
           data={data}
@@ -186,10 +150,10 @@ const Home = () => {
       </View>
       <FlatList
         horizontal
-        data={homeTaskData}
         showsHorizontalScrollIndicator={false}
+        data={loading ? [1, 2, 3] : homeTaskData}
         contentContainerStyle={{paddingHorizontal: 20}}
-        renderItem={({item}) => <HomeTaskCard item={item} />}
+        renderItem={({item}) => <HomeTaskCard item={item} loading={loading} />}
       />
     </ScreenWrapper>
   );
@@ -214,5 +178,10 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 5,
     paddingHorizontal: 20,
+  },
+  skeletonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 20,
   },
 });

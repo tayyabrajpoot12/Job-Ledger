@@ -6,26 +6,29 @@ import CustomText from '../../../../components/CustomText';
 import Icons from '../../../../components/Icons';
 import ImageFast from '../../../../components/ImageFast';
 import {COLORS} from '../../../../utils/COLORS';
+import SkeletonCard from './SkeletonCard';
 
-const HomeTaskCard = ({item}) => {
+const HomeTaskCard = ({item, loading}) => {
   const color =
-    item?.status === 'Active'
+    item?.status === 'active'
       ? COLORS.green
-      : item?.status === 'On Hold'
+      : item?.status === 'on-hold'
       ? COLORS.yellow
       : COLORS.purple;
 
   const bg =
-    item?.status === 'Active'
+    item?.status === 'active'
       ? COLORS.lightGreen
-      : item?.status === 'On Hold'
+      : item?.status === 'on-hold'
       ? COLORS.lightYellow
       : COLORS.lightPurple;
 
-  return (
+  return loading ? (
+    <SkeletonCard />
+  ) : (
     <TouchableOpacity style={styles.card} activeOpacity={0.6}>
       <ImageFast
-        source={Images.dummy}
+        source={item?.images ? {uri: item?.images[0]} : Images.dummy}
         resizeMode="stretch"
         style={styles.image}
       />
@@ -33,18 +36,18 @@ const HomeTaskCard = ({item}) => {
         <CustomText
           fontSize={12}
           color={color}
-          label={item?.status}
           alignSelf={'center'}
           fontFamily={fonts.medium}
+          textTransform={'capitalize'}
+          label={' ' + item?.status + ' '}
         />
       </View>
       <View style={{paddingHorizontal: 10, marginTop: 10}}>
         <View style={styles.row1}>
           <CustomText
-            label={item?.name}
-            alignSelf={'center'}
             width={150}
             numberOfLines={1}
+            label={item?.name}
             fontFamily={fonts.semiBold}
           />
           <View style={styles.row}>
@@ -62,7 +65,7 @@ const HomeTaskCard = ({item}) => {
             />
           </View>
         </View>
-        <View style={[styles.row, {paddingRight: 15, marginTop: 5}]}>
+        <View style={[styles.row, {paddingRight: 15, marginVertical: 5}]}>
           <Icons name={'location'} color={COLORS.gray1} size={16} top={2} />
           <CustomText
             fontSize={13}
@@ -102,8 +105,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lightPurple,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 20,
+    borderRadius: 5,
+    paddingHorizontal: 10,
     height: 30,
     position: 'absolute',
     right: 5,
