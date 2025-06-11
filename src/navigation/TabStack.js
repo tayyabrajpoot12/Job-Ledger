@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   tabBarStyle: {
-    height: 75,
+    height: 80,
     backgroundColor: COLORS.white,
     paddingTop: 8,
   },

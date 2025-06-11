@@ -59,8 +59,8 @@ const Login = () => {
       if (res.data?.result) {
         const id = res.data?.data?._id;
         dispatch(setToken(id));
-        setIsLoading(false);
       }
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
       ToastMessage(error?.response?.data?.message);

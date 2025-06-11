@@ -8,7 +8,7 @@ import ImageFast from '../../../../components/ImageFast';
 import {COLORS} from '../../../../utils/COLORS';
 import SkeletonCard from './SkeletonCard';
 
-const HomeTaskCard = ({item, loading}) => {
+const HomeTaskCard = ({item, loading, onPress}) => {
   const color =
     item?.status === 'active'
       ? COLORS.green
@@ -26,7 +26,7 @@ const HomeTaskCard = ({item, loading}) => {
   return loading ? (
     <SkeletonCard />
   ) : (
-    <TouchableOpacity style={styles.card} activeOpacity={0.6}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.6} onPress={onPress}>
       <ImageFast
         source={item?.images ? {uri: item?.images[0]} : Images.dummy}
         resizeMode="stretch"

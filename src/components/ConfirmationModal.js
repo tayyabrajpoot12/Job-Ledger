@@ -1,10 +1,10 @@
-import { StyleSheet, View } from "react-native";
-import fonts from "../assets/fonts";
-import { className } from "../global-styles";
-import { COLORS } from "../utils/COLORS";
-import CustomButton from "./CustomButton";
-import CustomModal from "./CustomModal";
-import CustomText from "./CustomText";
+import {StyleSheet, View} from 'react-native';
+import fonts from '../assets/fonts';
+import {className} from '../global-styles';
+import {COLORS} from '../utils/COLORS';
+import CustomButton from './CustomButton';
+import CustomModal from './CustomModal';
+import CustomText from './CustomText';
 
 const ConfirmationModal = ({
   isVisible,
@@ -16,48 +16,46 @@ const ConfirmationModal = ({
   heading,
 }) => {
   return (
-    <CustomModal isVisible={isVisible} onDisable={onDisable}>
-      <View style={[styles.mainContainer, { backgroundColor: COLORS.black }]}>
+    <CustomModal
+      isVisible={isVisible}
+      onDisable={loading ? () => '' : onDisable}>
+      <View style={[styles.mainContainer]}>
         <CustomText
-          label={heading || "Please Wait!"}
+          label={heading || 'Please Wait!'}
           fontSize={20}
           fontFamily={fonts.medium}
-          alignSelf={"center"}
-          textAlign={"center"}
-          textTransform={"capitalize"}
+          alignSelf={'center'}
+          textAlign={'center'}
+          textTransform={'capitalize'}
           marginBottom={10}
         />
         <CustomText
           label={desc}
           fontSize={12}
-          textAlign={"center"}
-          alignSelf={"center"}
+          textAlign={'center'}
+          alignSelf={'center'}
           marginTop={8}
           marginBottom={12}
         />
 
-        <View style={[className("align-center mt-2"), { width: "100%" }]}>
+        <View style={[className('align-center mt-2'), {width: '100%'}]}>
           <CustomButton
             title={title}
             marginBottom={10}
             onPress={onPress}
-            customText={{ fontFamily: fonts.medium }}
-            customStyle={[className("bg-red h-12")]}
+            customText={{fontFamily: fonts.medium}}
+            height={45}
             loading={loading}
             disabled={loading}
-            color={"#fff"}
-            indicatorcolor={"#fff"}
           />
           <CustomButton
             title="Cancel"
             marginBottom={10}
-            customText={{ fontFamily: fonts.medium }}
+            customText={{fontFamily: fonts.medium}}
             onPress={onDisable}
-            color={"#fff"}
-            customStyle={[
-              className(" h-12"),
-              { backgroundColor: COLORS.black },
-            ]}
+            backgroundColor={'transparent'}
+            color={'#000'}
+            height={45}
           />
         </View>
       </View>
@@ -75,6 +73,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
     marginBottom: 6,
     paddingTop: 26,
-    alignItems: "center",
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
   },
 });

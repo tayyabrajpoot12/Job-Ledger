@@ -10,13 +10,12 @@ import {get} from '../../../Services/ApiRequest';
 import {COLORS} from '../../../utils/COLORS';
 import HomeHeader from './molecules/Header';
 import HomeTaskCard from './molecules/HomeTaskCard';
-import SkeletonCard from './molecules/SkeletonCard';
 
 const chartConfig = {
   backgroundColor: COLORS.primaryColor,
   backgroundGradientFrom: COLORS.placeHolder,
   backgroundGradientTo: COLORS.primaryColor,
-  color: (opacity = 1) => `#fff`,
+  color: (opacity = 1) => '#fff',
   useShadowColorFromDataset: true,
   fillShadowGradientFromOpacity: 0,
   fillShadowGradientToOpacity: 1,
@@ -69,14 +68,20 @@ const Home = () => {
   const {token} = useSelector(state => state.authConfigs);
 
   useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const url = `getMyDashboard/${token}`;
-        const taslUrl = `getMyProjects/${token}`;
+    if (!token) {
+      return;
+    }
 
-        const res = await get(url);
-        const taskResponse = await get(taslUrl);
+    const requestAndFetchData = async () => {
+      setLoading(true);
+      try {
+        const dashboardUrl = `getMyDashboard/${token}`;
+        const taskUrl = `getMyProjects/${token}`;
+
+        const [res, taskResponse] = await Promise.all([
+          get(dashboardUrl),
+          get(taskUrl),
+        ]);
 
         if (res.data?.result) {
           setStats(res.data?.data?.projectStats);
@@ -84,12 +89,14 @@ const Home = () => {
         if (taskResponse.data?.result) {
           setHomeTaskData(taskResponse.data?.data);
         }
-        setLoading(false);
       } catch (error) {
-        console.log(error, 'in dashboard data');
+        console.log(error, 'Error in dashboard or location permission');
+      } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    requestAndFetchData();
   }, [token]);
 
   return (
@@ -153,7 +160,13 @@ const Home = () => {
         showsHorizontalScrollIndicator={false}
         data={loading ? [1, 2, 3] : homeTaskData}
         contentContainerStyle={{paddingHorizontal: 20}}
-        renderItem={({item}) => <HomeTaskCard item={item} loading={loading} />}
+        renderItem={({item}) => (
+          <HomeTaskCard
+            item={item}
+            loading={loading}
+            onPress={() => navigation.navigate('TaskDetails', {task: item})}
+          />
+        )}
       />
     </ScreenWrapper>
   );

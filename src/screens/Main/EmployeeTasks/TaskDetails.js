@@ -1,35 +1,250 @@
-/* eslint-disable eqeqeq */
-/* eslint-disable react-native/no-inline-styles */
-import {StyleSheet, Dimensions, View, Animated} from 'react-native';
-import React, {useState, useEffect, useRef} from 'react';
-import ScreenWrapper from '../../../components/ScreenWrapper';
-import Header from '../../../components/Header';
-import ImageFast from '../../../components/ImageFast';
-import {COLORS} from '../../../utils/COLORS';
-import {Images} from '../../../assets/images';
-import CustomText from '../../../components/CustomText';
-import moment from 'moment';
+/* eslint-disable react-hooks/exhaustive-deps */
 import {useRoute} from '@react-navigation/native';
-import fonts from '../../../assets/fonts';
-import Icons from '../../../components/Icons';
-import CustomButton from '../../../components/CustomButton';
+import moment from 'moment';
+import React, {useEffect, useRef, useState} from 'react';
+import {Linking, Platform, View} from 'react-native';
+import Geolocation from 'react-native-geolocation-service';
+import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 
-const {width} = Dimensions.get('screen');
+import {Images} from '../../../assets/images';
+import ConfirmationModal from '../../../components/ConfirmationModal';
+import Header from '../../../components/Header';
+import ScreenWrapper from '../../../components/ScreenWrapper';
+import {get, post} from '../../../Services/ApiRequest';
+import {ToastMessage} from '../../../utils/ToastMessage';
+import Slider from './molecules/Slider';
+import TaskSummary from './molecules/TaskSummary';
+import TaskDetailer from './molecules/TaskDetailer';
+import CustomText from '../../../components/CustomText';
+import fonts from '../../../assets/fonts';
+import {COLORS} from '../../../utils/COLORS';
 
 const TaskDetails = () => {
   const {params} = useRoute();
   const intervalRef = useRef(null);
 
   const task = params?.task;
-  const [active, setActive] = useState(1);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const employeeId = task?.assignedEmployees?.[0]?._id;
 
   const [timer, setTimer] = useState(0);
+  const [show, setShow] = useState(false);
+  const [active, setActive] = useState(1);
+  const [action, setAction] = useState('');
+  const [distance, setDistance] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [timeSummary, setTimeSummary] = useState([]);
-  const [punchInTime, setPunchInTime] = useState(null);
+  const [pageLoader, setPageLoader] = useState(true);
+  const [modalLoader, setModalLoader] = useState(false);
 
-  const images = task?.images || [Images.dummy];
+  const isImg = task?.images?.[0]?.includes('https');
+  const images = isImg ? task?.images : [Images.dummy];
+
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3;
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  };
+
+  const getLocation = () => {
+    return new Promise((resolve, reject) => {
+      try {
+        Geolocation.getCurrentPosition(
+          position => resolve(position.coords),
+          error => reject(error),
+          {
+            enableHighAccuracy: false,
+            timeout: 20000,
+            maximumAge: 10000,
+            forceRequestLocation: true,
+            showLocationDialog: true,
+          },
+        );
+      } catch (err) {
+        console.error('Crash in location:', err);
+        reject(err);
+      }
+    });
+  };
+
+  const requestLocationPermission = async () => {
+    try {
+      const permission =
+        Platform.OS === 'ios'
+          ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
+          : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
+
+      const result = await request(permission);
+
+      if (result === RESULTS.GRANTED) {
+        return true;
+      } else if (result === RESULTS.BLOCKED) {
+        ToastMessage(
+          'Location permission is blocked. Please enable it in settings.',
+        );
+        Linking.openSettings();
+        return false;
+      } else {
+        ToastMessage('Please grant location permission to proceed');
+        return false;
+      }
+    } catch (error) {
+      console.log('Permission error:', error);
+      ToastMessage('Error requesting location permission');
+      return false;
+    }
+  };
+
+  const getCurrentStatus = async () => {
+    try {
+      const url = `getCurrentStatus/${task?._id}?employeeId=${employeeId}`;
+      const response = await get(url);
+
+      if (response?.data?.data) {
+        const status = response.data?.data?.currentStatus;
+
+        if (status === 'punched_in') {
+          setActive(2);
+          setIsRunning(true);
+          const punchInTime = response?.data?.data?.activePunchIn?.punchInTime;
+          const elapsed = moment().diff(moment(punchInTime), 'seconds');
+          setTimer(elapsed);
+        } else {
+          setActive(1);
+          setIsRunning(false);
+          setTimer(0);
+        }
+      }
+    } catch (error) {
+      console.log('Error getting current status:', error.response.data);
+    }
+  };
+
+  const getTimeSummary = async () => {
+    try {
+      const body = {
+        employeeId: employeeId,
+        projectId: task?._id,
+      };
+
+      const response = await post('getTimeSummary', body);
+
+      if (response?.data?.result) {
+        const summary = response?.data?.data?.records;
+
+        const formattedSummary = summary?.map(entry => ({
+          id: entry?._id || Date.now(),
+          date: moment(entry?.date).format('DD MMM'),
+          timeIn: moment(entry?.punchInTime).format('HH:mm'),
+          timeOut: entry?.punchOutTime
+            ? moment(entry?.punchOutTime).format('HH:mm')
+            : '--',
+          punchStatus: entry?.punchStatus,
+          totalHours: entry?.totalHours,
+        }));
+        setTimeSummary(formattedSummary);
+      }
+    } catch (error) {
+      console.log('Error getting time summary:', error);
+    }
+  };
+
+  const handleAdd = async punchStatus => {
+    try {
+      const userLocation = await getLocation();
+
+      const apiData = {
+        employeeId: employeeId,
+        projectId: task?._id,
+        location: {
+          lat: userLocation.latitude,
+          lng: userLocation.longitude,
+          address: 'Current Location',
+        },
+        action: action,
+        punchStatus: punchStatus,
+      };
+
+      const response = await post('punchInOut', apiData);
+
+      if (response?.data?.result) {
+        fetchData();
+        ToastMessage(
+          `Successfully punched ${action === 'punch_in' ? 'in' : 'out'}!`,
+        );
+
+        setTimer(0);
+
+        if (action === 'punch_in') {
+          setIsRunning(true);
+          setActive(2);
+        } else {
+          setIsRunning(false);
+          setActive(1);
+        }
+      } else {
+        ToastMessage(
+          'Failed to punch ' + (action === 'punch_in' ? 'in' : 'out'),
+        );
+      }
+      setLoading(false);
+      setShow(false);
+      setModalLoader(false);
+    } catch (error) {
+      console.log(error.response?.data, 'in add');
+      setLoading(false);
+      setModalLoader(false);
+    }
+  };
+
+  const handlePunchInOut = async punchAction => {
+    try {
+      setAction(punchAction);
+      const hasPermission = await requestLocationPermission();
+      if (!hasPermission) {
+        return;
+      }
+
+      setLoading(true);
+
+      const userLocation = await getLocation();
+
+      const dis = calculateDistance(
+        userLocation.latitude,
+        userLocation.longitude,
+        task?.location?.lat || 0,
+        task?.location?.lng || 0,
+      );
+
+      if (Math.round(dis) > 100) {
+        setLoading(false);
+        setDistance(dis);
+        setShow(true);
+        return;
+      }
+
+      handleAdd('green');
+    } catch (error) {
+      console.error('Error in punch in/out:', error);
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async () => {
+    setPageLoader(true);
+    await getCurrentStatus();
+    await getTimeSummary();
+    setPageLoader(false);
+  };
 
   useEffect(() => {
     if (isRunning) {
@@ -43,442 +258,56 @@ const TaskDetails = () => {
     return () => clearInterval(intervalRef.current);
   }, [isRunning]);
 
-  const formatTimer = seconds => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handlePunchIn = () => {
-    const now = moment();
-    setPunchInTime(now);
-    setTimer(0);
-    setIsRunning(true);
-    setActive(2);
-  };
-
-  const handlePunchOut = () => {
-    const now = moment();
-    const totalSeconds = timer;
-
-    const summaryEntry = {
-      id: Date.now(),
-      date: punchInTime.format('DD MMM'),
-      timeIn: punchInTime.format('HH:mm'),
-      timeOut: now.format('HH:mm'),
-      total: formatTimer(totalSeconds),
-      totalSeconds: totalSeconds,
+  useEffect(() => {
+    fetchData();
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
-
-    setTimeSummary(prev => [summaryEntry, ...prev]);
-    setIsRunning(false);
-    setTimer(0);
-    setPunchInTime(null);
-    setActive(1);
-  };
-
-  const color =
-    task?.status === 'active'
-      ? COLORS.green
-      : task?.status === 'on-hold'
-      ? COLORS.yellow
-      : COLORS.purple;
-
-  const bg =
-    task?.status === 'active'
-      ? COLORS.lightGreen
-      : task?.status === 'on-hold'
-      ? COLORS.lightYellow
-      : COLORS.lightPurple;
+  }, []);
 
   return (
     <ScreenWrapper
       headerUnScrollable={() => <Header title={'Project Details'} />}
       scrollEnabled>
-      <View>
-        <Animated.FlatList
-          data={images}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          getItemLayout={(_, index) => ({
-            length: width,
-            offset: width * index,
-            index,
-          })}
-          onScrollToIndexFailed={info => {
-            console.error('Failed to scroll to index:', info.index);
-          }}
-          onMomentumScrollEnd={e => {
-            const x = e.nativeEvent.contentOffset.x;
-            setCurrentIndex((x / width)?.toFixed(0));
-          }}
-          initialScrollIndex={currentIndex}
-          pagingEnabled
-          renderItem={({item}) => (
-            <Animated.View style={styles.sliderItem}>
-              <ImageFast source={item} style={styles.image} />
-            </Animated.View>
-          )}
-        />
-        <Animated.View style={styles.dotContainer}>
-          {images?.map((_, i) => (
-            <Animated.View
-              key={i}
-              style={[
-                styles.dot,
-                {
-                  height: i == currentIndex ? 10 : 8,
-                  width: i == currentIndex ? 20 : 8,
-                  backgroundColor:
-                    i == currentIndex ? COLORS.primaryColor : COLORS.gray1,
-                },
-              ]}
-            />
-          ))}
-        </Animated.View>
-      </View>
-      <View style={styles.row1}>
-        <CustomText
-          label={task?.name}
-          fontFamily={fonts.semiBold}
-          fontSize={16}
-          marginTop={10}
-        />
-        <View style={[styles.status, {backgroundColor: bg}]}>
+      <Slider images={images} isImg={isImg} />
+      <TaskDetailer task={task} />
+      {pageLoader ? (
+        <View>
           <CustomText
-            color={color}
-            fontSize={12}
+            marginTop={60}
             alignSelf={'center'}
-            fontFamily={fonts.medium}
-            textTransform={'capitalize'}
-            label={' ' + task?.status + ' '}
-          />
-        </View>
-      </View>
-      <CustomText
-        label="Description"
-        fontFamily={fonts.medium}
-        marginTop={5}
-        color={COLORS.primaryColor}
-      />
-      <CustomText
-        label={task?.description}
-        color={COLORS.inputLabel}
-        fontSize={12}
-      />
-      <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
-        <View style={{width: '33%'}}>
-          <CustomText
-            label="Total Budget"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <View style={styles.row}>
-            <Icons name={'dollar-sign'} family={'Feather'} top={-1} size={16} />
-            <CustomText
-              label={task?.budget}
-              fontFamily={fonts.semiBold}
-              fontSize={16}
-            />
-          </View>
-        </View>
-        <View style={{width: '33%'}}>
-          <CustomText
-            label="My Earning"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <View style={styles.row}>
-            <Icons name={'dollar-sign'} family={'Feather'} top={-1} size={16} />
-            <CustomText
-              label={task?.laborBudget}
-              fontFamily={fonts.semiBold}
-              fontSize={16}
-            />
-          </View>
-        </View>
-        <View style={{width: '33%'}}>
-          <CustomText
-            label="Material Cost"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <View style={styles.row}>
-            <Icons name={'dollar-sign'} family={'Feather'} top={-1} size={16} />
-            <CustomText
-              label={task?.materialCosts}
-              fontFamily={fonts.semiBold}
-              fontSize={16}
-            />
-          </View>
-        </View>
-      </View>
-      <CustomText
-        marginTop={10}
-        label="Project Location"
-        fontFamily={fonts.medium}
-        color={COLORS.primaryColor}
-      />
-      <View style={styles.row}>
-        <Icons name={'location'} />
-        <CustomText
-          fontSize={13}
-          marginLeft={5}
-          color={COLORS.gray1}
-          label={task?.address}
-        />
-      </View>
-      <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
-        <View style={{width: '50%'}}>
-          <CustomText
-            label="Start Date"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <CustomText
-            fontSize={13}
-            color={COLORS.black}
-            fontFamily={fonts.medium}
-            label={`${moment(task?.startDate).format('ddd DD MMM YYYY')}`}
-          />
-        </View>
-
-        <View style={{width: '50%'}}>
-          <CustomText
-            label="End Date"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <CustomText
-            fontSize={13}
-            color={COLORS.black}
-            fontFamily={fonts.medium}
-            label={`${moment(task?.endDate).format('ddd DD MMM YYYY')}`}
-          />
-        </View>
-      </View>
-
-      {(isRunning || timer > 0) && (
-        <View style={styles.timerContainer}>
-          <CustomText
-            label="Current Session"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-            alignSelf={'center'}
-          />
-          <CustomText
-            marginTop={5}
-            fontSize={17}
-            alignSelf={'center'}
-            color={COLORS.green}
-            label={formatTimer(timer)}
             fontFamily={fonts.semiBold}
+            color={COLORS.primaryColor}
+            label={'Loading Summary...'}
           />
         </View>
-      )}
-
-      {active === 1 ? (
-        <CustomButton
-          height={45}
-          marginTop={20}
-          borderRadius={30}
-          title={'Punch In'}
-          onPress={handlePunchIn}
-        />
       ) : (
-        <CustomButton
-          height={45}
-          marginTop={20}
-          borderRadius={30}
-          title={'Punch Out'}
-          onPress={handlePunchOut}
+        <TaskSummary
+          timer={timer}
+          active={active}
+          loading={loading}
+          isRunning={isRunning}
+          timeSummary={timeSummary}
+          handlePunchInOut={handlePunchInOut}
         />
       )}
-
-      <CustomText
-        marginTop={15}
-        label="Time Summary"
-        fontFamily={fonts.medium}
-        color={COLORS.primaryColor}
+      <ConfirmationModal
+        isVisible={show}
+        loading={modalLoader}
+        title={'Proceed Anyway'}
+        onPress={() => {
+          setModalLoader(true);
+          handleAdd('red');
+        }}
+        onDisable={() => setShow(false)}
+        desc={`You are ${Math.round(
+          distance,
+        )}m away from project location. Status will be marked as outside location.`}
       />
-
-      <View style={styles.descBG}>
-        <View style={styles.width25}>
-          <CustomText label="Date" fontFamily={fonts.medium} fontSize={12} />
-        </View>
-        <View style={styles.width25}>
-          <CustomText label="Time In" fontFamily={fonts.medium} fontSize={12} />
-        </View>
-        <View style={styles.width25}>
-          <CustomText
-            label="Time Out"
-            fontFamily={fonts.medium}
-            fontSize={12}
-          />
-        </View>
-        <View style={styles.width25}>
-          <CustomText
-            fontSize={12}
-            label="Total Time"
-            fontFamily={fonts.medium}
-          />
-        </View>
-      </View>
-
-      {timeSummary.map(entry => (
-        <View key={entry.id} style={styles.summaryRow}>
-          <View style={styles.width25}>
-            <CustomText
-              label={entry.date}
-              fontFamily={fonts.regular}
-              fontSize={11}
-              color={COLORS.inputLabel}
-            />
-          </View>
-          <View style={styles.width25}>
-            <CustomText
-              label={entry.timeIn}
-              fontFamily={fonts.regular}
-              fontSize={11}
-              color={COLORS.inputLabel}
-            />
-          </View>
-          <View style={styles.width25}>
-            <CustomText
-              label={entry.timeOut}
-              fontFamily={fonts.regular}
-              fontSize={11}
-              color={COLORS.inputLabel}
-            />
-          </View>
-          <View style={styles.width25}>
-            <CustomText
-              label={entry.total}
-              fontFamily={fonts.medium}
-              fontSize={11}
-              color={COLORS.primaryColor}
-            />
-          </View>
-        </View>
-      ))}
-
-      {timeSummary.length === 0 && (
-        <View style={styles.noDataContainer}>
-          <CustomText
-            fontSize={12}
-            color={COLORS.gray1}
-            alignSelf={'center'}
-            fontFamily={fonts.medium}
-            label="No time entries yet"
-          />
-        </View>
-      )}
     </ScreenWrapper>
   );
 };
 
 export default TaskDetails;
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  row1: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  width20: {
-    width: '20%',
-    alignItems: 'center',
-  },
-  width25: {
-    width: '25%',
-    alignItems: 'center',
-  },
-  sliderItem: {
-    width: width - 50,
-    height: 160,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
-  },
-  dot: {
-    marginHorizontal: 3,
-    borderRadius: 100,
-  },
-  dotContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 15,
-    alignSelf: 'center',
-  },
-  time: {
-    color: COLORS.inputLabel,
-    fontFamily: fonts.medium,
-    fontSize: 9,
-    letterSpacing: 0.1,
-  },
-  total: {
-    color: COLORS.primaryColor,
-    fontFamily: fonts.bold,
-    fontSize: 12,
-    letterSpacing: 0.1,
-  },
-  status: {
-    backgroundColor: COLORS.lightPurple,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 7,
-    paddingHorizontal: 15,
-    height: 30,
-  },
-  descBG: {
-    backgroundColor: '#003F7D14',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 5,
-    marginBottom: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  timerContainer: {
-    alignItems: 'center',
-    marginTop: 15,
-    paddingVertical: 15,
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: COLORS.lightGray,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    backgroundColor: COLORS.white,
-    marginBottom: 2,
-    borderRadius: 3,
-  },
-  noDataContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-    backgroundColor: COLORS.white,
-    borderRadius: 5,
-    marginTop: 5,
-  },
-});
