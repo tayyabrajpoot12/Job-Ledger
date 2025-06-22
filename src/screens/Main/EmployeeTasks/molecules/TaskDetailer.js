@@ -13,6 +13,8 @@ const TaskDetailer = ({task}) => {
       ? COLORS.green
       : task?.status === 'on-hold'
       ? COLORS.yellow
+      : task?.status === 'completed'
+      ? COLORS.primaryColor
       : COLORS.purple;
 
   const bg =
@@ -20,7 +22,10 @@ const TaskDetailer = ({task}) => {
       ? COLORS.lightGreen
       : task?.status === 'on-hold'
       ? COLORS.lightYellow
+      : task?.status === 'completed'
+      ? COLORS.lightBlue
       : COLORS.lightPurple;
+
   return (
     <View>
       <View style={styles.row1}>
@@ -52,7 +57,7 @@ const TaskDetailer = ({task}) => {
         color={COLORS.inputLabel}
         fontSize={12}
       />
-      <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
+      {/* <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
         <View style={{width: '33%'}}>
           <CustomText
             label="Total Budget"
@@ -98,7 +103,7 @@ const TaskDetailer = ({task}) => {
             />
           </View>
         </View>
-      </View>
+      </View> */}
       <CustomText
         marginTop={10}
         label="Project Location"
@@ -111,7 +116,7 @@ const TaskDetailer = ({task}) => {
           fontSize={13}
           marginLeft={5}
           color={COLORS.gray1}
-          label={task?.address}
+          label={task?.location?.address}
         />
       </View>
       <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>

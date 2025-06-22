@@ -3,8 +3,10 @@ import React from 'react';
 
 //screens
 import Login from '../screens/Auth/Login';
-import ResetPass from '../screens/Auth/ResetPass';
 import Signup from '../screens/Auth/Signup';
+import OTPScreen from '../screens/Auth/ForgotPassword/OtpScreen';
+import ResetPassword from '../screens/Auth/ForgotPassword/ResetPassword';
+import ForgotPassword from '../screens/Auth/ForgotPassword';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,7 +19,9 @@ const AuthStack = () => {
       }}>
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Signup" component={Signup} />
-      <Stack.Screen name="ResetPass" component={ResetPass} />
+      <Stack.Screen name="OTPScreen" component={OTPScreen} />
+      <Stack.Screen name="ResetPassword" component={ResetPassword} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
     </Stack.Navigator>
   );
 };

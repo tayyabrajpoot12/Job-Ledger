@@ -29,14 +29,20 @@ const getTotalHoursAndSalary = (records, hourlyRate) => {
   }
 
   const greenRecords = records.filter(item => item.punchStatus === 'green');
+  const redRecords = records.filter(item => item.punchStatus === 'red');
 
-  const totalHours = greenRecords.reduce(
+  const greenHours = greenRecords?.reduce(
     (sum, curr) => sum + curr.totalHours,
     0,
   );
-  const totalSalary = totalHours * hourlyRate;
+  const redHours = redRecords?.reduce((sum, curr) => sum + curr.totalHours, 0);
+  const totalHours = records?.reduce((sum, curr) => sum + curr.totalHours, 0);
+
+  const totalSalary = greenHours * hourlyRate;
 
   return {
+    redHours: redHours.toFixed(2),
+    greenHours: greenHours.toFixed(2),
     totalHours: totalHours.toFixed(2),
     totalSalary: `$${totalSalary.toFixed(2)}`,
   };
@@ -50,8 +56,10 @@ const TaskSummary = ({
   loading,
   handlePunchInOut,
   salary,
+  hide = false,
 }) => {
-  const {totalHours, totalSalary} = getTotalHoursAndSalary(timeSummary, 50);
+  const {totalHours, totalSalary, redHours, greenHours} =
+    getTotalHoursAndSalary(timeSummary, salary);
 
   return (
     <View>
@@ -74,24 +82,28 @@ const TaskSummary = ({
         </View>
       )}
 
-      {active === 1 ? (
-        <CustomButton
-          height={45}
-          marginTop={20}
-          borderRadius={30}
-          title={'Punch In'}
-          loading={loading}
-          onPress={() => handlePunchInOut('punch_in')}
-        />
-      ) : (
-        <CustomButton
-          height={45}
-          marginTop={20}
-          borderRadius={30}
-          title={'Punch Out'}
-          loading={loading}
-          onPress={() => handlePunchInOut('punch_out')}
-        />
+      {!hide && (
+        <>
+          {active === 1 ? (
+            <CustomButton
+              height={45}
+              marginTop={20}
+              borderRadius={30}
+              title={'Punch In'}
+              loading={loading}
+              onPress={() => handlePunchInOut('punch_in')}
+            />
+          ) : (
+            <CustomButton
+              height={45}
+              marginTop={20}
+              borderRadius={30}
+              title={'Punch Out'}
+              loading={loading}
+              onPress={() => handlePunchInOut('punch_out')}
+            />
+          )}
+        </>
       )}
 
       <CustomText
@@ -169,28 +181,83 @@ const TaskSummary = ({
           />
         </View>
       ) : (
-        <View style={styles.summaryBox}>
-          <View style={[styles.row, {width: '50%'}]}>
-            <CustomText label={'Total Hours:'} fontFamily={fonts.medium} />
-            <CustomText
-              marginLeft={10}
-              numberOfLines={1}
-              label={totalHours}
-              fontFamily={fonts.semiBold}
-              color={COLORS.primaryColor}
-            />
+        <>
+          <View style={styles.summaryBox}>
+            <View style={styles.row}>
+              <View style={[styles.row, {width: '50%'}]}>
+                <CustomText
+                  fontSize={12}
+                  label={'Outside Hours:'}
+                  fontFamily={fonts.semiBold}
+                />
+                <CustomText
+                  fontSize={12}
+                  marginLeft={10}
+                  label={redHours}
+                  numberOfLines={1}
+                  fontFamily={fonts.semiBold}
+                  color={COLORS.primaryColor}
+                />
+              </View>
+              <View style={[styles.row, {width: '50%'}]}>
+                <CustomText
+                  fontSize={12}
+                  label={'Inside Hours:'}
+                  fontFamily={fonts.semiBold}
+                />
+                <CustomText
+                  fontSize={12}
+                  marginLeft={10}
+                  numberOfLines={1}
+                  label={greenHours}
+                  fontFamily={fonts.semiBold}
+                  color={COLORS.primaryColor}
+                />
+              </View>
+            </View>
+            <View style={styles.row}>
+              <View style={[styles.row, {width: '50%'}]}>
+                <CustomText
+                  fontSize={12}
+                  label={'Total Hours:'}
+                  fontFamily={fonts.semiBold}
+                />
+                <CustomText
+                  fontSize={12}
+                  marginLeft={10}
+                  numberOfLines={1}
+                  label={totalHours}
+                  fontFamily={fonts.semiBold}
+                  color={COLORS.primaryColor}
+                />
+              </View>
+              <View style={[styles.row, {width: '50%'}]}>
+                <CustomText
+                  fontSize={12}
+                  label={'Total Salary:'}
+                  fontFamily={fonts.semiBold}
+                />
+                <CustomText
+                  fontSize={12}
+                  marginLeft={10}
+                  numberOfLines={1}
+                  label={totalSalary}
+                  fontFamily={fonts.semiBold}
+                  color={COLORS.primaryColor}
+                />
+              </View>
+            </View>
           </View>
-          <View style={[styles.row, {width: '50%'}]}>
-            <CustomText label={'Total Salary:'} fontFamily={fonts.medium} />
+          {totalHours === '0.00' && (
             <CustomText
-              marginLeft={10}
-              numberOfLines={1}
-              label={totalSalary}
-              fontFamily={fonts.semiBold}
-              color={COLORS.primaryColor}
+              marginBottom={10}
+              fontFamily={fonts.medium}
+              label={
+                'Your salary is $0.00 as all of your punch in/out are outside of the project location'
+              }
             />
-          </View>
-        </View>
+          )}
+        </>
       )}
     </View>
   );

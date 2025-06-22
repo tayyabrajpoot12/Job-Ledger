@@ -1,12 +1,12 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useCallback, useEffect, useState} from 'react';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import React, {useCallback, useState} from 'react';
 import {FlatList, RefreshControl} from 'react-native';
 import {useSelector} from 'react-redux';
 import Header from '../../../components/Header';
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import {get} from '../../../Services/ApiRequest';
 import {COLORS} from '../../../utils/COLORS';
-import TaskCard from './molecules/TaskCard';
+import TaskCard from '../../../components/TaskCard';
 
 const EmployeeTasks = () => {
   const navigation = useNavigation();
@@ -36,9 +36,11 @@ const EmployeeTasks = () => {
     }
   }, [token]);
 
-  useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProjects();
+    }, [fetchProjects]),
+  );
 
   const renderTask = ({item}) => (
     <TaskCard

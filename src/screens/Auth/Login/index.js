@@ -37,15 +37,6 @@ const Login = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleForgotPassword = async () => {
-    try {
-      navigation.navigate('ResetPass', {token: ''});
-    } catch (err) {
-      console.log(err?.response);
-      ToastMessage(err?.response?.data?.message);
-    }
-  };
-
   const handleLogin = async state => {
     try {
       setIsLoading(true);
@@ -114,11 +105,11 @@ const Login = () => {
             />
             <Error error={errors.password} visible={touched.password} />
             <CustomText
+              color={COLORS.gray1}
+              alignSelf={'flex-end'}
               label={'Forgot Password?'}
               fontFamily={fonts.semiBold}
-              onPress={handleForgotPassword}
-              alignSelf={'flex-end'}
-              color={COLORS.gray1}
+              onPress={() => navigation.navigate('ForgotPassword')}
             />
             <CustomButton
               marginTop={25}

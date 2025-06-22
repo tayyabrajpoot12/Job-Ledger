@@ -1,44 +1,46 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {useRoute} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import moment from 'moment';
 import React, {useEffect, useRef, useState} from 'react';
-import {Linking, Platform, View} from 'react-native';
+import {Linking, Platform} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 
-import {Images} from '../../../assets/images';
+import fonts from '../../../assets/fonts';
 import ConfirmationModal from '../../../components/ConfirmationModal';
+import CustomButton from '../../../components/CustomButton';
+import CustomText from '../../../components/CustomText';
 import Header from '../../../components/Header';
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import {get, post} from '../../../Services/ApiRequest';
-import {ToastMessage} from '../../../utils/ToastMessage';
-import Slider from './molecules/Slider';
-import TaskSummary from './molecules/TaskSummary';
-import TaskDetailer from './molecules/TaskDetailer';
-import CustomText from '../../../components/CustomText';
-import fonts from '../../../assets/fonts';
 import {COLORS} from '../../../utils/COLORS';
+import {ToastMessage} from '../../../utils/ToastMessage';
+import TaskDetailer from './molecules/TaskDetailer';
+import TaskSummary from './molecules/TaskSummary';
+import {useSelector} from 'react-redux';
 
 const TaskDetails = () => {
   const {params} = useRoute();
   const intervalRef = useRef(null);
+  const navigation = useNavigation();
+
+  const {userData} = useSelector(state => state?.users);
+  const employeeId = useSelector(state => state?.authConfigs?.token);
 
   const task = params?.task;
-  const employeeId = task?.assignedEmployees?.[0]?._id;
+  const adminId = userData?.createdBy?._id;
 
   const [timer, setTimer] = useState(0);
   const [show, setShow] = useState(false);
   const [active, setActive] = useState(1);
   const [action, setAction] = useState('');
+  const [loader, setLoader] = useState(false);
   const [distance, setDistance] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [timeSummary, setTimeSummary] = useState([]);
   const [pageLoader, setPageLoader] = useState(true);
   const [modalLoader, setModalLoader] = useState(false);
-
-  const isImg = task?.images?.[0]?.includes('https');
-  const images = isImg ? task?.images : [Images.dummy];
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371e3;
@@ -125,6 +127,7 @@ const TaskDetails = () => {
         }
       }
     } catch (error) {
+      ToastMessage(error?.response?.data?.message);
       console.log('Error getting current status:', error.response.data);
     }
   };
@@ -154,11 +157,12 @@ const TaskDetails = () => {
         setTimeSummary(formattedSummary);
       }
     } catch (error) {
+      ToastMessage(error?.response?.data?.message);
       console.log('Error getting time summary:', error);
     }
   };
 
-  const handleAdd = async punchStatus => {
+  const handleAdd = async (punchStatus, actionPunch) => {
     try {
       const userLocation = await getLocation();
 
@@ -170,7 +174,7 @@ const TaskDetails = () => {
           lng: userLocation.longitude,
           address: 'Current Location',
         },
-        action: action,
+        action: actionPunch || action,
         punchStatus: punchStatus,
       };
 
@@ -232,10 +236,52 @@ const TaskDetails = () => {
         return;
       }
 
-      handleAdd('green');
+      handleAdd('green', punchAction);
     } catch (error) {
       console.error('Error in punch in/out:', error);
       setLoading(false);
+    }
+  };
+
+  const handleComplete = async () => {
+    try {
+      if (timeSummary?.length === 0) {
+        return ToastMessage('Please add at least one time punch in');
+      }
+
+      if (active === 2) {
+        return ToastMessage('Please Punch out before complete project');
+      }
+
+      setLoader(true);
+
+      const hasPermission = await requestLocationPermission();
+      if (!hasPermission) {
+        return;
+      }
+
+      const userLocation = await getLocation();
+
+      const body = {
+        projectId: task?._id,
+        location: {lat: userLocation?.latitude, lng: userLocation?.longitude},
+        completedBy: employeeId,
+        completionNotes: '',
+        adminId: adminId,
+      };
+
+      const res = await post('/completeProjectt', body);
+
+      if (res.data?.result) {
+        ToastMessage(res?.data?.message);
+        navigation.goBack();
+      }
+
+      setLoader(false);
+    } catch (error) {
+      ToastMessage(error?.response?.data?.message);
+      setLoader(false);
+      console.log(error, 'in complete project');
     }
   };
 
@@ -271,27 +317,36 @@ const TaskDetails = () => {
     <ScreenWrapper
       headerUnScrollable={() => <Header title={'Project Details'} />}
       scrollEnabled>
-      <Slider images={images} isImg={isImg} />
       <TaskDetailer task={task} />
       {pageLoader ? (
-        <View>
-          <CustomText
-            marginTop={60}
-            alignSelf={'center'}
-            fontFamily={fonts.semiBold}
-            color={COLORS.primaryColor}
-            label={'Loading Summary...'}
-          />
-        </View>
-      ) : (
-        <TaskSummary
-          timer={timer}
-          active={active}
-          loading={loading}
-          isRunning={isRunning}
-          timeSummary={timeSummary}
-          handlePunchInOut={handlePunchInOut}
+        <CustomText
+          marginTop={60}
+          alignSelf={'center'}
+          fontFamily={fonts.semiBold}
+          color={COLORS.primaryColor}
+          label={'Loading Summary...'}
         />
+      ) : (
+        <>
+          <TaskSummary
+            timer={timer}
+            active={active}
+            loading={loading}
+            isRunning={isRunning}
+            timeSummary={timeSummary}
+            handlePunchInOut={handlePunchInOut}
+            salary={userData?.salary || 0}
+            hide={loader || task?.status === 'completed'}
+          />
+          {task?.status !== 'completed' && timeSummary?.length > 0 && (
+            <CustomButton
+              loading={loader}
+              disabled={loader}
+              onPress={handleComplete}
+              title={'Complete Project'}
+            />
+          )}
+        </>
       )}
       <ConfirmationModal
         isVisible={show}

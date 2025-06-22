@@ -11,33 +11,45 @@ import Header from '../../../components/Header';
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import {className} from '../../../global-styles';
 import {ToastMessage} from '../../../utils/ToastMessage';
-import ResetSuccessModal from './molecules/ResetSuccessModal';
+import {post} from '../../../Services/ApiRequest';
 
 const validationSchema = Yup.object().shape({
   password: Yup.string()
-    .required('Password is required')
+    .required('Please enter New Password')
     .min(8, 'Password must be at least 8 characters')
-    .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .matches(/[0-9]/, 'Password must contain at least one number')
+    .matches(/[A-Za-z]/, 'New Password must contain at least one letter')
+    .matches(/[0-9]/, 'New Password must contain at least one number')
     .matches(
       /[!@#$%^&*(),.?":{}|<>]/,
-      'Password must contain at least one special character',
+      'New Password must contain at least one special character',
     ),
   confirmPassword: Yup.string()
     .required('Please enter confirm password')
     .oneOf([Yup.ref('password'), null], 'Passwords do not match'),
 });
-const ResetPass = ({navigation, route}) => {
+
+const ResetPassword = ({navigation, route}) => {
+  const {email, resetToken} = route?.params;
   const [loading, setLoading] = useState(false);
-  const [isResetModal, setResetModal] = useState(false);
 
   const handleSetNewPassword = async values => {
     try {
-      setResetModal(true);
+      setLoading(true);
+
+      const res = await post('resetForgottenPassword', {
+        email,
+        resetToken,
+        newPassword: values?.password,
+      });
+
+      if (res.data?.result) {
+        ToastMessage(res.data?.message);
+        navigation.reset({index: 0, routes: [{name: 'Login'}]});
+      }
+
+      setLoading(false);
     } catch (error) {
       ToastMessage(error?.response?.data?.message);
-    } finally {
       setLoading(false);
     }
   };
@@ -48,23 +60,6 @@ const ResetPass = ({navigation, route}) => {
       <AuthWrapper
         heading="Create New Password"
         desc="Your new password must be unique from those previously used.">
-        <ResetSuccessModal
-          isVisible={isResetModal}
-          onDisable={() => {
-            setResetModal(false);
-            setTimeout(() => {
-              navigation.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: 'Login',
-                  },
-                ],
-              });
-            }, 1000);
-          }}
-        />
-
         <Formik
           initialValues={{password: '', confirmPassword: ''}}
           onSubmit={values => handleSetNewPassword(values)}
@@ -114,4 +109,4 @@ const ResetPass = ({navigation, route}) => {
   );
 };
 
-export default ResetPass;
+export default ResetPassword;

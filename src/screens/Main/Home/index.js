@@ -1,44 +1,16 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
-import {Dimensions, FlatList, StyleSheet, View} from 'react-native';
-import {LineChart} from 'react-native-chart-kit';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import React, {useCallback, useState} from 'react';
+import {FlatList, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
 import fonts from '../../../assets/fonts';
 import CustomText from '../../../components/CustomText';
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import {get} from '../../../Services/ApiRequest';
 import {COLORS} from '../../../utils/COLORS';
+
+import TaskCard from '../../../components/TaskCard';
+import {ToastMessage} from '../../../utils/ToastMessage';
 import HomeHeader from './molecules/Header';
-import HomeTaskCard from './molecules/HomeTaskCard';
-
-const chartConfig = {
-  backgroundColor: COLORS.primaryColor,
-  backgroundGradientFrom: COLORS.placeHolder,
-  backgroundGradientTo: COLORS.primaryColor,
-  color: (opacity = 1) => '#fff',
-  useShadowColorFromDataset: true,
-  fillShadowGradientFromOpacity: 0,
-  fillShadowGradientToOpacity: 1,
-  propsForVerticalLabels: {
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  propsForHorizontalLabels: {
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-};
-
-const screenWidth = Dimensions.get('window').width;
-
-const earningData = [
-  Math.random() * 100,
-  Math.random() * 100,
-  Math.random() * 100,
-  Math.random() * 100,
-  Math.random() * 100,
-  Math.random() * 100,
-];
 
 const Home = () => {
   const navigation = useNavigation();
@@ -67,37 +39,31 @@ const Home = () => {
 
   const {token} = useSelector(state => state.authConfigs);
 
-  useEffect(() => {
-    if (!token) {
-      return;
-    }
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const dashboardUrl = `getMyDashboard/${token}`;
 
-    const requestAndFetchData = async () => {
-      setLoading(true);
-      try {
-        const dashboardUrl = `getMyDashboard/${token}`;
-        const taskUrl = `getMyProjects/${token}`;
+      const res = await get(dashboardUrl);
 
-        const [res, taskResponse] = await Promise.all([
-          get(dashboardUrl),
-          get(taskUrl),
-        ]);
-
-        if (res.data?.result) {
-          setStats(res.data?.data?.projectStats);
-        }
-        if (taskResponse.data?.result) {
-          setHomeTaskData(taskResponse.data?.data);
-        }
-      } catch (error) {
-        console.log(error, 'Error in dashboard or location permission');
-      } finally {
-        setLoading(false);
+      if (res.data?.result) {
+        setStats(res.data?.data?.projectStats);
+        setHomeTaskData(res.data?.data?.recentProjects);
       }
-    };
 
-    requestAndFetchData();
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      ToastMessage(error?.response?.data?.message);
+      console.log(error, 'Error in dashboard');
+    }
   }, [token]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [fetchData]),
+  );
 
   return (
     <ScreenWrapper
@@ -126,27 +92,8 @@ const Home = () => {
             </View>
           )}
         />
-        <CustomText
-          marginTop={5}
-          marginBottom={5}
-          label={'My Earnings'}
-          fontFamily={fonts.medium}
-        />
       </View>
-      <LineChart
-        data={{
-          datasets: [{data: earningData}],
-          labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-        }}
-        bezier
-        height={230}
-        yAxisLabel="$"
-        yAxisSuffix="k"
-        withInnerLines={false}
-        width={screenWidth - 40}
-        chartConfig={chartConfig}
-        style={{alignSelf: 'center', borderRadius: 10}}
-      />
+
       <View style={styles.row}>
         <CustomText label={'Recent Projects'} fontFamily={fonts.medium} />
         <CustomText
@@ -155,13 +102,22 @@ const Home = () => {
           onPress={() => navigation.navigate('EmployeeTasks')}
         />
       </View>
+
       <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        data={loading ? [1, 2, 3] : homeTaskData}
+        showsVerticalScrollIndicator={false}
+        data={loading ? [1, 2, 3, 4, 5, 6] : homeTaskData}
+        ListEmptyComponent={
+          <CustomText
+            fontSize={17}
+            marginTop={'30%'}
+            alignSelf={'center'}
+            fontFamily={fonts.semiBold}
+            label={'No Recent Projects Found'}
+          />
+        }
         contentContainerStyle={{paddingHorizontal: 20}}
         renderItem={({item}) => (
-          <HomeTaskCard
+          <TaskCard
             item={item}
             loading={loading}
             onPress={() => navigation.navigate('TaskDetails', {task: item})}

@@ -33,7 +33,7 @@ export const uploadAndGetUrl = async (file, setLoading) => {
     console.log(res.data);
     return res?.data?.image;
   } catch (err) {
-    console.log(err);
+    console.log(err.response.data);
     ToastMessage('Upload Again');
   } finally {
     setLoading?.(false);

@@ -110,8 +110,5 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.lightGray,
     borderRadius: 5,
     padding: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
 });

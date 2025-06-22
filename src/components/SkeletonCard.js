@@ -3,7 +3,7 @@ import React from 'react';
 import {View, StyleSheet, Dimensions} from 'react-native';
 import {Skeleton} from '@rneui/themed';
 import LinearGradient from 'react-native-linear-gradient';
-import {COLORS} from '../../../../utils/COLORS';
+import {COLORS} from '../utils/COLORS';
 
 const {width} = Dimensions.get('window');
 
@@ -24,13 +24,45 @@ const SkeletonCard = () => {
   return (
     <View style={styles.mainCard}>
       <View style={styles.skeletonHeader}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+          <Skeleton
+            animation="pulse"
+            LinearGradientComponent={renderGrade}
+            skeletonStyle={skeletonStyle}
+            width={190}
+            height={25}
+            style={styles.customSkeleton}
+          />
+          <Skeleton
+            LinearGradientComponent={renderGrade}
+            animation="pulse"
+            width={70}
+            height={25}
+            borderRadius={5}
+            style={styles.customSkeleton}
+          />
+        </View>
+
         <Skeleton
-          LinearGradientComponent={renderGrade}
           animation="pulse"
-          width={70}
-          height={25}
-          borderRadius={5}
-          style={styles.customSkeleton}
+          width={160}
+          height={20}
+          LinearGradientComponent={renderGrade}
+          skeletonStyle={skeletonStyle}
+          style={[styles.customSkeleton, {marginTop: 7}]}
+        />
+        <Skeleton
+          animation="pulse"
+          width={130}
+          height={20}
+          LinearGradientComponent={renderGrade}
+          skeletonStyle={skeletonStyle}
+          style={[styles.customSkeleton, {marginTop: 7}]}
         />
       </View>
       <Skeleton
@@ -39,23 +71,6 @@ const SkeletonCard = () => {
         style={styles.cardImg}
         skeletonStyle={skeletonStyle}
       />
-      <View style={styles.skeletonContent}>
-        <Skeleton
-          animation="pulse"
-          LinearGradientComponent={renderGrade}
-          skeletonStyle={skeletonStyle}
-          width={170}
-          height={20}
-        />
-        <Skeleton
-          animation="pulse"
-          width={130}
-          height={20}
-          style={{marginTop: 10}}
-          LinearGradientComponent={renderGrade}
-          skeletonStyle={skeletonStyle}
-        />
-      </View>
     </View>
   );
 };
@@ -67,10 +82,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.lightGray,
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
-    width: 240,
     marginBottom: 12,
-    marginRight: 15,
-
     overflow: 'hidden',
   },
   customSkeleton: {
@@ -82,7 +94,6 @@ const styles = StyleSheet.create({
     height: 'auto',
   },
   skeletonHeader: {
-    alignItems: 'flex-end',
     marginBottom: 5,
     position: 'absolute',
     zIndex: 99999,
@@ -92,10 +103,9 @@ const styles = StyleSheet.create({
   },
   cardImg: {
     width: '100%',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
     height: 100,
-    marginBottom: 10,
   },
   skeletonContent: {
     paddingHorizontal: 10,

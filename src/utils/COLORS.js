@@ -16,5 +16,6 @@ export const COLORS = {
   purple: '#7e22ce',
   lightPurple: '#d9b4fa',
   lightYellow: '#FFF9C4',
+  lightBlue: '#bed1f7',
   lightGreen: '#c2fcc2',
 };

@@ -23,6 +23,7 @@ import {uploadAndGetUrl} from '../../../utils/constants';
 import {ToastMessage} from '../../../utils/ToastMessage';
 import LocationModal from '../../../components/LocationModal';
 import {setUserData} from '../../../store/reducer/usersSlice';
+import {bool} from 'yup';
 
 const EditProfile = () => {
   const dispatch = useDispatch();
@@ -40,7 +41,6 @@ const EditProfile = () => {
   const init = {
     firstName: userData?.firstName,
     lastName: userData?.lastName,
-    role: userData?.role,
     email: userData?.email,
     department: userData?.department,
     joiningDate: date,
@@ -94,12 +94,6 @@ const EditProfile = () => {
       onChange: text => setState({...state, department: text}),
     },
     {
-      id: 5,
-      placeholder: 'Role',
-      value: state.role,
-      onChange: text => setState({...state, role: text}),
-    },
-    {
       id: 6,
       placeholder: 'Salary',
       value: state.salary,
@@ -117,7 +111,7 @@ const EditProfile = () => {
     setLoading(true);
     try {
       const body = {
-        // image: image,
+        image: image,
         lng: state.lng,
         lat: state.lat,
         phone: state.phone,

@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     justifyContent: 'center',
     paddingVertical: 10,
-    marginTop: StatusBar.currentHeight,
+    paddingTop: StatusBar.currentHeight,
   },
   back: {
     width: 35,
@@ -53,6 +53,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     left: 20,
-    top: 7.5,
+    top: StatusBar.currentHeight - 2,
   },
 });

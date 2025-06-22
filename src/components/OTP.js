@@ -1,19 +1,19 @@
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import React from 'react';
 import {
   useClearByFocusCell,
   useBlurOnFulfill,
   CodeField,
   Cursor,
-} from "react-native-confirmation-code-field";
+} from 'react-native-confirmation-code-field';
 
-import { COLORS } from "../utils/COLORS";
-import fonts from "../assets/fonts";
+import {COLORS} from '../utils/COLORS';
+import fonts from '../assets/fonts';
 
-const CELL_COUNT = 4;
+const CELL_COUNT = 6;
 
-const OTPComponent = ({ value, setValue }) => {
-  const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
+const OTPComponent = ({value, setValue}) => {
+  const ref = useBlurOnFulfill({value, cellCount: CELL_COUNT});
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value,
     setValue,
@@ -30,16 +30,11 @@ const OTPComponent = ({ value, setValue }) => {
         rootStyle={styles.codeFieldRoot}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
-        renderCell={({ index, symbol, isFocused }) => (
+        renderCell={({index, symbol, isFocused}) => (
           <View
             onLayout={getCellOnLayoutHandler(index)}
             key={index}
-            style={[
-              styles.cellRoot,
-              isFocused && styles.focusCell,
-              { backgroundColor: COLORS.secondaryColor },
-            ]}
-          >
+            style={[styles.cellRoot, isFocused && styles.focusCell]}>
             <Text style={styles.cellText}>
               {symbol || (isFocused ? <Cursor /> : null)}
             </Text>
@@ -54,30 +49,30 @@ export default OTPComponent;
 
 const styles = StyleSheet.create({
   codeFieldRoot: {
-    width: "98%",
-    justifyContent: "space-between",
-    alignSelf: "center",
+    width: '100%',
+    justifyContent: 'space-between',
+    alignSelf: 'center',
   },
   cellRoot: {
     height: 56,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 8,
-    borderColor: COLORS.gray1,
+    borderColor: COLORS.lightGray,
     borderWidth: 1,
-    width: 69,
-    // backgroundColor: COLORS.secondaryColor,
+    backgroundColor: COLORS.white,
+    width: 45,
   },
   cellText: {
-    color: COLORS.white,
+    color: COLORS.black,
     fontSize: 30,
-    textAlign: "center",
+    textAlign: 'center',
     fontFamily: fonts.regular,
     marginTop: 5,
   },
   focusCell: {
-    borderColor: COLORS.black,
     borderWidth: 1,
-    // backgroundColor: COLORS.secondaryColor,
+    borderColor: COLORS.black,
+    backgroundColor: COLORS.white,
   },
 });

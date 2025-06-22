@@ -1,3 +1,4 @@
+import {useNavigation} from '@react-navigation/native';
 import React from 'react';
 import {
   StyleSheet,
@@ -6,44 +7,17 @@ import {
   View,
 } from 'react-native';
 import {Calendar} from 'react-native-big-calendar';
-
 import fonts from '../../../../assets/fonts';
 import CustomText from '../../../../components/CustomText';
 import Icons from '../../../../components/Icons';
 import {COLORS} from '../../../../utils/COLORS';
 
-const now = new Date();
-const year = now.getFullYear();
-const month = now.getMonth(); // 0-based index
-
-const events = [
-  {
-    title: 'Team Meeting',
-    start: new Date(year, month, 5, 9, 0), // 5th of current month
-    end: new Date(year, month, 5, 10, 0),
-  },
-  {
-    title: 'Project Review',
-    start: new Date(year, month, 12, 14, 30), // 12th
-    end: new Date(year, month, 12, 15, 30),
-  },
-  {
-    title: 'Client Call',
-    start: new Date(year, month, 18, 11, 0), // 18th
-    end: new Date(year, month, 18, 11, 45),
-  },
-  {
-    title: 'Weekly Sync',
-    start: new Date(year, month, 25, 16, 0), // 25th
-    end: new Date(year, month, 25, 17, 0),
-  },
-];
-
-const CalendarBox = ({currentDate, setCurrentDate}) => {
+const CalendarBox = ({currentDate, setCurrentDate, events = []}) => {
   const {height} = useWindowDimensions();
+  const navigation = useNavigation();
 
   const handlePress = e => {
-    console.log(e);
+    navigation.navigate('TaskDetails', {task: e});
   };
 
   const handlePrev = () => {
