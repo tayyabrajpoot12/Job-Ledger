@@ -117,7 +117,6 @@ const OTPScreen = ({route}) => {
         ) : (
           <CustomText
             fontFamily={fonts.bold}
-            onPress={handleResendOtp}
             color={COLORS.secondaryColor}
             label={` 00 : ${String(timer).padStart(2, '0')}`}
           />

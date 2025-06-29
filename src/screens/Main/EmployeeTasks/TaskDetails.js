@@ -6,18 +6,18 @@ import {Linking, Platform} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 
+import {useSelector} from 'react-redux';
 import fonts from '../../../assets/fonts';
-import ConfirmationModal from '../../../components/ConfirmationModal';
 import CustomButton from '../../../components/CustomButton';
 import CustomText from '../../../components/CustomText';
 import Header from '../../../components/Header';
 import ScreenWrapper from '../../../components/ScreenWrapper';
-import {get, post} from '../../../Services/ApiRequest';
+import {get, post, put} from '../../../Services/ApiRequest';
 import {COLORS} from '../../../utils/COLORS';
 import {ToastMessage} from '../../../utils/ToastMessage';
+import PunchModal from './molecules/PunchModal';
 import TaskDetailer from './molecules/TaskDetailer';
 import TaskSummary from './molecules/TaskSummary';
-import {useSelector} from 'react-redux';
 
 const TaskDetails = () => {
   const {params} = useRoute();
@@ -33,6 +33,7 @@ const TaskDetails = () => {
   const [timer, setTimer] = useState(0);
   const [show, setShow] = useState(false);
   const [active, setActive] = useState(1);
+  const [reason, setReason] = useState('');
   const [action, setAction] = useState('');
   const [loader, setLoader] = useState(false);
   const [distance, setDistance] = useState(0);
@@ -166,19 +167,43 @@ const TaskDetails = () => {
     try {
       const userLocation = await getLocation();
 
+      const actionToSend = actionPunch || action;
+
       const apiData = {
         employeeId: employeeId,
         projectId: task?._id,
         location: {
           lat: userLocation.latitude,
           lng: userLocation.longitude,
-          address: 'Current Location',
+          address: 'Current Location1',
         },
-        action: actionPunch || action,
+        action: actionToSend,
         punchStatus: punchStatus,
       };
 
+      if (punchStatus === 'red') {
+        if (actionToSend === 'punch_in') {
+          apiData.reasonLatePunchIn = reason?.trim();
+        } else {
+          apiData.reasonLatePunchOut = reason?.trim();
+        }
+      }
+
+      if (timeSummary?.length === 0) {
+        await put(`updateProject/${task?._id}`, {
+          startDate: new Date().toISOString(),
+          adminId: adminId,
+        });
+      }
+
       const response = await post('punchInOut', apiData);
+
+      if (actionToSend === 'punch_out') {
+        await put(`updateProject/${task?._id}`, {
+          endDate: new Date().toISOString(),
+          adminId: adminId,
+        });
+      }
 
       if (response?.data?.result) {
         fetchData();
@@ -200,6 +225,7 @@ const TaskDetails = () => {
           'Failed to punch ' + (action === 'punch_in' ? 'in' : 'out'),
         );
       }
+      setReason('');
       setLoading(false);
       setShow(false);
       setModalLoader(false);
@@ -348,18 +374,17 @@ const TaskDetails = () => {
           )}
         </>
       )}
-      <ConfirmationModal
+      <PunchModal
+        reason={reason}
         isVisible={show}
+        setReason={setReason}
         loading={modalLoader}
-        title={'Proceed Anyway'}
+        distance={Math.round(distance)}
+        onDisable={() => setShow(false)}
         onPress={() => {
           setModalLoader(true);
           handleAdd('red');
         }}
-        onDisable={() => setShow(false)}
-        desc={`You are ${Math.round(
-          distance,
-        )}m away from project location. Status will be marked as outside location.`}
       />
     </ScreenWrapper>
   );

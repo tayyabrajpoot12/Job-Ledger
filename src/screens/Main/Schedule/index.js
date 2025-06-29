@@ -28,14 +28,16 @@ const Schedule = () => {
 
       const res = await get(url);
       if (res.data?.result) {
-        const array = res?.data?.data?.map(item => {
-          return {
-            title: item?.name,
-            start: toLocalDate(item?.startDate),
-            end: toLocalDate(item?.endDate),
-            ...item,
-          };
-        });
+        const array = res?.data?.datas
+          ?.filter(item => item?.status === 'active')
+          ?.map(item => {
+            return {
+              title: item?.name,
+              start: toLocalDate(item?.startDate),
+              end: toLocalDate(item?.endDate),
+              ...item,
+            };
+          });
 
         setData(array);
       }

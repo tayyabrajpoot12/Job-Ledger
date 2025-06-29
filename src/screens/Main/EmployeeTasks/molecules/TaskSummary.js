@@ -25,6 +25,8 @@ const getTotalHoursAndSalary = (records, hourlyRate) => {
     return {
       totalHours: '...',
       totalSalary: '...',
+      redHours: '...',
+      greenHours: '...',
     };
   }
 
@@ -58,8 +60,10 @@ const TaskSummary = ({
   salary,
   hide = false,
 }) => {
-  const {totalHours, totalSalary, redHours, greenHours} =
-    getTotalHoursAndSalary(timeSummary, salary);
+  const {totalHours, redHours, greenHours} = getTotalHoursAndSalary(
+    timeSummary,
+    salary,
+  );
 
   return (
     <View>
@@ -231,7 +235,7 @@ const TaskSummary = ({
                   color={COLORS.primaryColor}
                 />
               </View>
-              <View style={[styles.row, {width: '50%'}]}>
+              {/* <View style={[styles.row, {width: '50%'}]}>
                 <CustomText
                   fontSize={12}
                   label={'Total Salary:'}
@@ -245,7 +249,7 @@ const TaskSummary = ({
                   fontFamily={fonts.semiBold}
                   color={COLORS.primaryColor}
                 />
-              </View>
+              </View> */}
             </View>
           </View>
           {totalHours === '0.00' && (

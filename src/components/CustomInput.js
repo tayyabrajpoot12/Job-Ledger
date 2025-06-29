@@ -87,7 +87,7 @@ const CustomInput = ({
             styles.input,
             {
               width: secureTextEntry ? '92%' : '98%',
-              paddingVertical: multiline ? 18 : 0,
+              paddingVertical: multiline ? 10 : 0,
               paddingHorizontal: searchIcon || onMail ? 10 : 0,
               color: color,
             },

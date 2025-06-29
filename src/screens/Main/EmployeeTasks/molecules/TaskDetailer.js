@@ -119,7 +119,7 @@ const TaskDetailer = ({task}) => {
           label={task?.location?.address}
         />
       </View>
-      <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
+      {/* <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
         <View style={{width: '50%'}}>
           <CustomText
             label="Start Date"
@@ -147,7 +147,7 @@ const TaskDetailer = ({task}) => {
             label={`${moment(task?.endDate).format('ddd DD MMM YYYY')}`}
           />
         </View>
-      </View>
+      </View> */}
     </View>
   );
 };

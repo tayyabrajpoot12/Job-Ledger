@@ -7,32 +7,34 @@ import ScreenWrapper from '../../../components/ScreenWrapper';
 import {get} from '../../../Services/ApiRequest';
 import {COLORS} from '../../../utils/COLORS';
 import TaskCard from '../../../components/TaskCard';
+import CustomText from '../../../components/CustomText';
+import fonts from '../../../assets/fonts';
 
 const EmployeeTasks = () => {
   const navigation = useNavigation();
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(true);
 
   const {token} = useSelector(state => state.authConfigs);
 
   const handleRefresh = () => {
-    setLoading(true);
+    setRefreshing(true);
     fetchProjects();
   };
 
   const fetchProjects = useCallback(async () => {
     try {
-      setLoading(true);
-      const url = `getMyProjects/${token}`;
+      const url = `getMyProjects/${token}?status=active`;
 
       const res = await get(url);
+
       if (res.data?.result) {
         setData(res.data?.data);
       }
-      setLoading(false);
+      setRefreshing(false);
     } catch (error) {
-      console.log(error, 'in dashboard data');
-      setLoading(false);
+      setRefreshing(false);
+      console.log(error.response.data, 'in task data');
     }
   }, [token]);
 
@@ -55,9 +57,18 @@ const EmployeeTasks = () => {
         data={data}
         refreshControl={
           <RefreshControl
-            refreshing={loading}
+            refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={[COLORS.primaryColor]}
+            colors={[COLORS.red]}
+          />
+        }
+        ListEmptyComponent={
+          <CustomText
+            fontSize={18}
+            marginTop={'50%'}
+            alignSelf={'center'}
+            fontFamily={fonts.medium}
+            label={'No Active Project Found'}
           />
         }
         renderItem={renderTask}

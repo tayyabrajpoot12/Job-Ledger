@@ -1,5 +1,11 @@
 import {useNavigation} from '@react-navigation/native';
-import {StatusBar, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {
+  Platform,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import fonts from '../assets/fonts';
 import {COLORS} from '../utils/COLORS';
 import CustomText from './CustomText';
@@ -53,6 +59,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     left: 20,
-    top: StatusBar.currentHeight - 2,
+    top: Platform.OS === 'android' && StatusBar.currentHeight - 2,
   },
 });

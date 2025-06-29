@@ -40,7 +40,6 @@ const Home = () => {
   const {token} = useSelector(state => state.authConfigs);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
     try {
       const dashboardUrl = `getMyDashboard/${token}`;
 
@@ -48,7 +47,11 @@ const Home = () => {
 
       if (res.data?.result) {
         setStats(res.data?.data?.projectStats);
-        setHomeTaskData(res.data?.data?.recentProjects);
+        const array = res.data?.data?.recentProjects || [];
+
+        const filterData = array?.filter(e => e?.status === 'active');
+
+        setHomeTaskData(filterData);
       }
 
       setLoading(false);
