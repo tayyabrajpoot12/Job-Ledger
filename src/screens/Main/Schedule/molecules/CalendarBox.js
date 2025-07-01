@@ -71,7 +71,7 @@ const CalendarBox = ({currentDate, setCurrentDate, events = []}) => {
       <Calendar
         events={events}
         date={new Date(currentDate) || new Date()}
-        height={height}
+        height={450}
         mode={'month'}
         eventCellStyle={event => ({
           ...styles.event,

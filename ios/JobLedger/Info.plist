@@ -31,6 +31,8 @@
 			<key>NSAllowsLocalNetworking</key>
 			<true />
 		</dict>
+		<key>NSAppleMusicUsageDescription</key>
+		<string>Job Ledger needs access to media to upload pictures.</string>
 		<key>NSCameraUsageDescription</key>
 		<string>Job Ledger needs access to your Camera.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

@@ -59,7 +59,7 @@ const EmployeeTasks = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={[COLORS.red]}
+            colors={[COLORS.primaryColor]}
           />
         }
         ListEmptyComponent={
