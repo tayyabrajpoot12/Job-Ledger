@@ -27,14 +27,14 @@ const Home = () => {
       name: 'Active Projects',
       value: stats?.active,
     },
-    {
-      name: 'Pending Projects',
-      value: stats?.pending,
-    },
-    {
-      name: 'Completed Projects',
-      value: stats?.completed,
-    },
+    // {
+    //   name: 'Pending Projects',
+    //   value: stats?.pending,
+    // },
+    // {
+    //   name: 'Completed Projects',
+    //   value: stats?.completed,
+    // },
   ];
 
   const {token} = useSelector(state => state.authConfigs);
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
-    marginTop: 15,
+    marginTop: 5,
     marginBottom: 5,
     paddingHorizontal: 20,
   },

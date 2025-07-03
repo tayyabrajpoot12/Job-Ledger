@@ -1,10 +1,10 @@
 import React from 'react';
-import {View} from 'react-native';
-import moment from 'moment';
+import {TouchableOpacity, View} from 'react-native';
 import fonts from '../../../../assets/fonts';
 import CustomText from '../../../../components/CustomText';
 import Icons from '../../../../components/Icons';
 import {COLORS} from '../../../../utils/COLORS';
+import {handleMap} from '../../../../utils/constants';
 import {styles} from '../styles';
 
 const TaskDetailer = ({task}) => {
@@ -48,8 +48,8 @@ const TaskDetailer = ({task}) => {
       </View>
       <CustomText
         label="Description"
-        fontFamily={fonts.medium}
         marginTop={5}
+        fontFamily={fonts.medium}
         color={COLORS.primaryColor}
       />
       <CustomText
@@ -110,7 +110,16 @@ const TaskDetailer = ({task}) => {
         fontFamily={fonts.medium}
         color={COLORS.primaryColor}
       />
-      <View style={styles.row}>
+      <TouchableOpacity
+        style={styles.row}
+        activeOpacity={0.5}
+        onPress={() =>
+          handleMap(
+            task?.location?.lat,
+            task?.location?.lng,
+            task?.location?.address,
+          )
+        }>
         <Icons name={'location'} />
         <CustomText
           fontSize={13}
@@ -118,7 +127,7 @@ const TaskDetailer = ({task}) => {
           color={COLORS.gray1}
           label={task?.location?.address}
         />
-      </View>
+      </TouchableOpacity>
       {/* <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
         <View style={{width: '50%'}}>
           <CustomText

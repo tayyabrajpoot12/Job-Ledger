@@ -1,6 +1,7 @@
 import {createNavigationContainerRef} from '@react-navigation/native';
 import {post} from '../Services/ApiRequest';
 import {ToastMessage} from './ToastMessage';
+import {Linking, Platform} from 'react-native';
 
 export const navigationRef = createNavigationContainerRef();
 
@@ -38,6 +39,23 @@ export const uploadAndGetUrl = async (file, setLoading) => {
   } finally {
     setLoading?.(false);
   }
+};
+
+export const handleMap = (latitude, longitude, label) => {
+  if (!latitude || !longitude) {
+    return ToastMessage('Something failed!');
+  }
+  const latLng = `${latitude},${longitude}`;
+  const encodedLabel = encodeURIComponent(label);
+  let url = '';
+
+  if (Platform.OS === 'ios') {
+    url = `http://maps.apple.com/?ll=${latLng}&q=${encodedLabel}`;
+  } else {
+    url = `geo:0,0?q=${latLng}(${encodedLabel})`;
+  }
+
+  Linking.openURL(url).catch(err => console.error('Error opening map', err));
 };
 
 export default {

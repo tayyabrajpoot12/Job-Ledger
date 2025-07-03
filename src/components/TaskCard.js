@@ -5,6 +5,7 @@ import CustomText from './CustomText';
 import fonts from '../assets/fonts';
 import Icons from './Icons';
 import SkeletonCard from './SkeletonCard';
+import {handleMap} from '../utils/constants';
 
 const TaskCard = ({item, onPress, loading}) => {
   const color =
@@ -53,7 +54,16 @@ const TaskCard = ({item, onPress, loading}) => {
         fontSize={13}
         marginTop={3}
       />
-      <View style={[styles.row, {paddingRight: 25, marginTop: 5}]}>
+      <TouchableOpacity
+        style={[styles.row, {paddingRight: 25, marginTop: 5}]}
+        activeOpacity={0.5}
+        onPress={() =>
+          handleMap(
+            item?.location?.lat,
+            item?.location?.lng,
+            item?.location?.address,
+          )
+        }>
         <Icons name={'location'} color={COLORS.gray1} size={17} top={2} />
         <CustomText
           fontSize={13}
@@ -62,7 +72,7 @@ const TaskCard = ({item, onPress, loading}) => {
           fontFamily={fonts.medium}
           label={item?.location?.address}
         />
-      </View>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 };

@@ -17,7 +17,7 @@ const formatTimer = seconds => {
 
 const getTotalHoursAndSalary = (records, hourlyRate) => {
   if (records.length === 0) {
-    return {totalHours: 0, totalSalary: 0};
+    return {totalHours: '0 hours 0 minutes', totalSalary: '$0.00'};
   }
 
   const firstRecord = records[0];
@@ -33,19 +33,31 @@ const getTotalHoursAndSalary = (records, hourlyRate) => {
   const greenRecords = records.filter(item => item.punchStatus === 'green');
   const redRecords = records.filter(item => item.punchStatus === 'red');
 
-  const greenHours = greenRecords?.reduce(
+  const greenHoursDecimal = greenRecords.reduce(
     (sum, curr) => sum + curr.totalHours,
     0,
   );
-  const redHours = redRecords?.reduce((sum, curr) => sum + curr.totalHours, 0);
-  const totalHours = records?.reduce((sum, curr) => sum + curr.totalHours, 0);
+  const redHoursDecimal = redRecords.reduce(
+    (sum, curr) => sum + curr.totalHours,
+    0,
+  );
+  const totalHoursDecimal = records.reduce(
+    (sum, curr) => sum + curr.totalHours,
+    0,
+  );
 
-  const totalSalary = greenHours * hourlyRate;
+  const totalSalary = greenHoursDecimal * hourlyRate;
+
+  const formatHours = decimal => {
+    const hours = Math.floor(decimal);
+    const minutes = Math.round((decimal - hours) * 60);
+    return `${hours} h ${minutes} min`;
+  };
 
   return {
-    redHours: redHours.toFixed(2),
-    greenHours: greenHours.toFixed(2),
-    totalHours: totalHours.toFixed(2),
+    redHours: formatHours(redHoursDecimal),
+    greenHours: formatHours(greenHoursDecimal),
+    totalHours: formatHours(totalHoursDecimal),
     totalSalary: `$${totalSalary.toFixed(2)}`,
   };
 };
@@ -187,7 +199,7 @@ const TaskSummary = ({
       ) : (
         <>
           <View style={styles.summaryBox}>
-            <View style={styles.row}>
+            {/* <View style={styles.row}>
               <View style={[styles.row, {width: '50%'}]}>
                 <CustomText
                   fontSize={12}
@@ -218,23 +230,17 @@ const TaskSummary = ({
                   color={COLORS.primaryColor}
                 />
               </View>
-            </View>
-            <View style={styles.row}>
-              <View style={[styles.row, {width: '50%'}]}>
-                <CustomText
-                  fontSize={12}
-                  label={'Total Hours:'}
-                  fontFamily={fonts.semiBold}
-                />
-                <CustomText
-                  fontSize={12}
-                  marginLeft={10}
-                  numberOfLines={1}
-                  label={totalHours}
-                  fontFamily={fonts.semiBold}
-                  color={COLORS.primaryColor}
-                />
-              </View>
+            </View> */}
+            <View style={[styles.row, {justifyContent: 'center'}]}>
+              <CustomText label={'Total Hours:'} fontFamily={fonts.semiBold} />
+              <CustomText
+                marginLeft={10}
+                numberOfLines={1}
+                label={totalHours}
+                fontFamily={fonts.semiBold}
+                color={COLORS.primaryColor}
+              />
+
               {/* <View style={[styles.row, {width: '50%'}]}>
                 <CustomText
                   fontSize={12}

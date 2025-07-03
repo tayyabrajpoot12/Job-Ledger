@@ -189,7 +189,7 @@ const TaskDetails = () => {
         }
       }
 
-      if (timeSummary?.length === 0) {
+      if (timeSummary?.length === 0 && !task?.startDate) {
         await put(`updateProject/${task?._id}`, {
           startDate: new Date().toISOString(),
           adminId: adminId,
@@ -198,12 +198,12 @@ const TaskDetails = () => {
 
       const response = await post('punchInOut', apiData);
 
-      if (actionToSend === 'punch_out') {
-        await put(`updateProject/${task?._id}`, {
-          endDate: new Date().toISOString(),
-          adminId: adminId,
-        });
-      }
+      // if (actionToSend === 'punch_out') {
+      //   await put(`updateProject/${task?._id}`, {
+      //     endDate: new Date().toISOString(),
+      //     adminId: adminId,
+      //   });
+      // }
 
       if (response?.data?.result) {
         fetchData();
@@ -364,14 +364,14 @@ const TaskDetails = () => {
             salary={userData?.salary || 0}
             hide={loader || task?.status === 'completed'}
           />
-          {task?.status !== 'completed' && timeSummary?.length > 0 && (
+          {/* {task?.status !== 'completed' && timeSummary?.length > 0 && (
             <CustomButton
               loading={loader}
               disabled={loader}
               onPress={handleComplete}
               title={'Complete Project'}
             />
-          )}
+          )} */}
         </>
       )}
       <PunchModal
