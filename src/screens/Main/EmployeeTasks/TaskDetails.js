@@ -27,6 +27,7 @@ const TaskDetails = () => {
   const employeeId = useSelector(state => state?.authConfigs?.token);
 
   const task = params?.task;
+
   const adminId = userData?.createdBy?._id;
 
   const [timer, setTimer] = useState(0);
@@ -109,6 +110,7 @@ const TaskDetails = () => {
   const getCurrentStatus = async () => {
     try {
       const url = `getCurrentStatus/${task?._id}?employeeId=${employeeId}`;
+
       const response = await get(url);
 
       if (response?.data?.data) {
@@ -260,6 +262,10 @@ const TaskDetails = () => {
 
   const handlePunchInOut = async punchAction => {
     try {
+      if (moment(task?.startDate).isAfter(moment())) {
+        return ToastMessage('Project will start soon');
+      }
+
       setAction(punchAction);
       const hasPermission = await requestLocationPermission();
       if (!hasPermission) {
@@ -334,7 +340,12 @@ const TaskDetails = () => {
   // };
 
   const fetchData = async () => {
+    if (moment(task?.startDate).isAfter(moment())) {
+      setPageLoader(false);
+      return ToastMessage('Project will start soon');
+    }
     setPageLoader(true);
+
     await getCurrentStatus();
     await getTimeSummary();
     setPageLoader(false);

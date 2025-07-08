@@ -1,11 +1,6 @@
 import {useNavigation} from '@react-navigation/native';
 import React from 'react';
-import {
-  StyleSheet,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Calendar} from 'react-native-big-calendar';
 import fonts from '../../../../assets/fonts';
 import CustomText from '../../../../components/CustomText';
@@ -13,11 +8,12 @@ import Icons from '../../../../components/Icons';
 import {COLORS} from '../../../../utils/COLORS';
 
 const CalendarBox = ({currentDate, setCurrentDate, events = []}) => {
-  const {height} = useWindowDimensions();
   const navigation = useNavigation();
 
   const handlePress = e => {
-    navigation.navigate('TaskDetails', {task: e});
+    navigation.navigate('TaskDetails', {
+      task: {...e?.projectId, startDate: e?.fromDate},
+    });
   };
 
   const handlePrev = () => {
