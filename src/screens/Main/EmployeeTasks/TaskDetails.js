@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {useRoute} from '@react-navigation/native';
 import moment from 'moment';
 import React, {useEffect, useRef, useState} from 'react';
 import {Linking, Platform} from 'react-native';
@@ -8,12 +8,12 @@ import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 
 import {useSelector} from 'react-redux';
 import fonts from '../../../assets/fonts';
-import CustomButton from '../../../components/CustomButton';
 import CustomText from '../../../components/CustomText';
 import Header from '../../../components/Header';
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import {get, post, put} from '../../../Services/ApiRequest';
 import {COLORS} from '../../../utils/COLORS';
+import constants from '../../../utils/constants';
 import {ToastMessage} from '../../../utils/ToastMessage';
 import PunchModal from './molecules/PunchModal';
 import TaskDetailer from './molecules/TaskDetailer';
@@ -22,7 +22,6 @@ import TaskSummary from './molecules/TaskSummary';
 const TaskDetails = () => {
   const {params} = useRoute();
   const intervalRef = useRef(null);
-  const navigation = useNavigation();
 
   const {userData} = useSelector(state => state?.users);
   const employeeId = useSelector(state => state?.authConfigs?.token);
@@ -163,9 +162,32 @@ const TaskDetails = () => {
     }
   };
 
+  const getPlaceName = async (latitude, longitude) => {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${constants.GOOGLE_API_KEY}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.status === 'OK') {
+        return data?.results[0]?.formatted_address;
+      } else {
+        console.error('Geocoding error:', data.status);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching geocode:', error);
+      return null;
+    }
+  };
+
   const handleAdd = async (punchStatus, actionPunch) => {
     try {
       const userLocation = await getLocation();
+      const place = await getPlaceName(
+        userLocation?.latitude,
+        userLocation?.longitude,
+      );
 
       const actionToSend = actionPunch || action;
 
@@ -175,7 +197,7 @@ const TaskDetails = () => {
         location: {
           lat: userLocation.latitude,
           lng: userLocation.longitude,
-          address: 'Current Location1',
+          address: place || 'Not Found',
         },
         action: actionToSend,
         punchStatus: punchStatus,
@@ -269,47 +291,47 @@ const TaskDetails = () => {
     }
   };
 
-  const handleComplete = async () => {
-    try {
-      if (timeSummary?.length === 0) {
-        return ToastMessage('Please add at least one time punch in');
-      }
+  // const handleComplete = async () => {
+  //   try {
+  //     if (timeSummary?.length === 0) {
+  //       return ToastMessage('Please add at least one time punch in');
+  //     }
 
-      if (active === 2) {
-        return ToastMessage('Please Punch out before complete project');
-      }
+  //     if (active === 2) {
+  //       return ToastMessage('Please Punch out before complete project');
+  //     }
 
-      setLoader(true);
+  //     setLoader(true);
 
-      const hasPermission = await requestLocationPermission();
-      if (!hasPermission) {
-        return;
-      }
+  //     const hasPermission = await requestLocationPermission();
+  //     if (!hasPermission) {
+  //       return;
+  //     }
 
-      const userLocation = await getLocation();
+  //     const userLocation = await getLocation();
 
-      const body = {
-        projectId: task?._id,
-        location: {lat: userLocation?.latitude, lng: userLocation?.longitude},
-        completedBy: employeeId,
-        completionNotes: '',
-        adminId: adminId,
-      };
+  //     const body = {
+  //       projectId: task?._id,
+  //       location: {lat: userLocation?.latitude, lng: userLocation?.longitude},
+  //       completedBy: employeeId,
+  //       completionNotes: '',
+  //       adminId: adminId,
+  //     };
 
-      const res = await post('/completeProjectt', body);
+  //     const res = await post('/completeProjectt', body);
 
-      if (res.data?.result) {
-        ToastMessage(res?.data?.message);
-        navigation.goBack();
-      }
+  //     if (res.data?.result) {
+  //       ToastMessage(res?.data?.message);
+  //       navigation.goBack();
+  //     }
 
-      setLoader(false);
-    } catch (error) {
-      ToastMessage(error?.response?.data?.message);
-      setLoader(false);
-      console.log(error, 'in complete project');
-    }
-  };
+  //     setLoader(false);
+  //   } catch (error) {
+  //     ToastMessage(error?.response?.data?.message);
+  //     setLoader(false);
+  //     console.log(error, 'in complete project');
+  //   }
+  // };
 
   const fetchData = async () => {
     setPageLoader(true);

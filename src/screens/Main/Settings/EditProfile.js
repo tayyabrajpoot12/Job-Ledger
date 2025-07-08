@@ -14,16 +14,15 @@ import CustomInput from '../../../components/CustomInput';
 import CustomText from '../../../components/CustomText';
 import Header from '../../../components/Header';
 import ImageFast from '../../../components/ImageFast';
+import LocationModal from '../../../components/LocationModal';
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import UploadImage from '../../../components/UploadImage';
 import {className} from '../../../global-styles';
 import {put} from '../../../Services/ApiRequest';
+import {setUserData} from '../../../store/reducer/usersSlice';
 import {COLORS} from '../../../utils/COLORS';
 import {uploadAndGetUrl} from '../../../utils/constants';
 import {ToastMessage} from '../../../utils/ToastMessage';
-import LocationModal from '../../../components/LocationModal';
-import {setUserData} from '../../../store/reducer/usersSlice';
-import {bool} from 'yup';
 
 const EditProfile = () => {
   const dispatch = useDispatch();
