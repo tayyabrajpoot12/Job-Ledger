@@ -198,12 +198,12 @@ const TaskDetails = () => {
 
       const response = await post('punchInOut', apiData);
 
-      // if (actionToSend === 'punch_out') {
-      //   await put(`updateProject/${task?._id}`, {
-      //     endDate: new Date().toISOString(),
-      //     adminId: adminId,
-      //   });
-      // }
+      if (actionToSend === 'punch_out') {
+        await put(`updateProject/${task?._id}`, {
+          endDate: new Date().toISOString(),
+          adminId: adminId,
+        });
+      }
 
       if (response?.data?.result) {
         fetchData();

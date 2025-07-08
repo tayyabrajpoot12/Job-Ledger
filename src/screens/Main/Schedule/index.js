@@ -1,14 +1,15 @@
-import React, {useCallback, useState} from 'react';
-import {StyleSheet, View, Alert} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
+import {useCallback, useState} from 'react';
+import {Alert, StyleSheet, View} from 'react-native';
+import {useSelector} from 'react-redux';
 import fonts from '../../../assets/fonts';
+import CustomDatePicker from '../../../components/CustomDatePicker';
 import CustomText from '../../../components/CustomText';
 import Header from '../../../components/Header';
 import ScreenWrapper from '../../../components/ScreenWrapper';
-import CalendarBox from './molecules/CalendarBox';
-import {useSelector} from 'react-redux';
 import {get} from '../../../Services/ApiRequest';
-import {useFocusEffect} from '@react-navigation/native';
-import CustomDatePicker from '../../../components/CustomDatePicker';
+import CalendarBox from './molecules/CalendarBox';
+import CustomButton from '../../../components/CustomButton';
 
 const toLocalDate = date => {
   const localDate = new Date(date);
@@ -26,36 +27,34 @@ const formatDateForAPI = date => {
   return `${year}-${month}-${day}`;
 };
 
-const formatDateForDisplay = date => {
-  if (!date) {
-    return '';
-  }
-  return new Date(date).toLocaleDateString();
-};
-
 const Schedule = () => {
   const [data, setData] = useState([]);
   const [hours, setHours] = useState('');
   const [loading, setLoading] = useState(true);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [lastWeekLoading, setLastWeekLoading] = useState(false);
+  const [lastWeekHours, setLastWeekHours] = useState('');
   const [endDate, setEndDate] = useState('');
   const [startDate, setStartDate] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const {token} = useSelector(state => state.authConfigs);
 
+  const {userData} = useSelector(state => state?.users);
+
   const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const url = `getMyProjects/${token}`;
+      const url = `/employee-schedules/${userData?._id}`;
 
       const res = await get(url);
+
       if (res.data?.result) {
-        const array = res?.data?.data?.map(item => {
+        const array = res?.data?.data?.schedules?.map(item => {
           return {
-            title: item?.name,
-            start: toLocalDate(item?.startDate),
-            end: toLocalDate(item?.endDate),
+            title: item?.projectId?.name,
+            start: toLocalDate(item?.fromDate),
+            end: toLocalDate(item?.toDate),
             ...item,
           };
         });
@@ -64,10 +63,10 @@ const Schedule = () => {
       }
       setLoading(false);
     } catch (error) {
-      console.log(error, 'in dashboard data');
+      console.log(error.response.data, 'in dashboard data');
       setLoading(false);
     }
-  }, [token]);
+  }, [userData?._id]);
 
   const fetchSummary = useCallback(
     async (fromDate, toDate) => {
@@ -90,6 +89,34 @@ const Schedule = () => {
     },
     [token],
   );
+
+  const fetchLastWeekHours = useCallback(async () => {
+    try {
+      setLastWeekLoading(true);
+
+      const today = new Date();
+      const lastWeekStart = new Date(today);
+      lastWeekStart.setDate(today.getDate() - 7);
+
+      const fromDate = formatDateForAPI(lastWeekStart);
+      const toDate = formatDateForAPI(today);
+
+      const url = `employee-projects/${token}?filter=custom&fromDate=${fromDate}&toDate=${toDate}`;
+
+      const res = await get(url);
+
+      if (res.data?.result) {
+        setLastWeekHours(res.data?.data?.totalHoursDisplay || '0');
+      } else {
+        setLastWeekHours('0');
+      }
+      setLastWeekLoading(false);
+    } catch (error) {
+      console.log(error, 'in fetching last week hours');
+      setLastWeekHours('0');
+      setLastWeekLoading(false);
+    }
+  }, [token]);
 
   const validateDates = (start, end) => {
     if (!start || !end) {
@@ -146,6 +173,10 @@ const Schedule = () => {
     }
   };
 
+  const handleShowLastWeekHours = () => {
+    fetchLastWeekHours();
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchProjects();
@@ -164,6 +195,18 @@ const Schedule = () => {
     return `Total hours worked: ${hours}`;
   };
 
+  const getLastWeekHoursText = () => {
+    if (lastWeekLoading) {
+      return 'Loading last week hours...';
+    }
+
+    if (lastWeekHours) {
+      return `Last week total hours: ${lastWeekHours}`;
+    }
+
+    return '';
+  };
+
   return (
     <ScreenWrapper
       scrollEnabled={loading ? false : true}
@@ -176,15 +219,6 @@ const Schedule = () => {
             label={'Loading...'}
             alignSelf={'center'}
             fontFamily={fonts.semiBold}
-          />
-        </View>
-      ) : data?.length <= 0 ? (
-        <View style={{flex: 1, justifyContent: 'center'}}>
-          <CustomText
-            fontSize={17}
-            alignSelf={'center'}
-            fontFamily={fonts.semiBold}
-            label={'No Project Found'}
           />
         </View>
       ) : (
@@ -228,6 +262,23 @@ const Schedule = () => {
                 style={styles.summaryText}
               />
             </View>
+            <CustomButton
+              width="70%"
+              borderRadius={30}
+              marginBottom={20}
+              title={'Show last week hours'}
+              onPress={handleShowLastWeekHours}
+            />
+            {(lastWeekLoading || lastWeekHours) && (
+              <View style={styles.summaryContainer}>
+                <CustomText
+                  label={getLastWeekHoursText()}
+                  fontSize={14}
+                  fontFamily={fonts.medium}
+                  style={styles.summaryText}
+                />
+              </View>
+            )}
           </View>
           <CalendarBox
             events={data}
