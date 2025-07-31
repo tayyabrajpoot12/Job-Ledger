@@ -2,7 +2,7 @@
 import {useRoute} from '@react-navigation/native';
 import moment from 'moment';
 import React, {useEffect, useRef, useState} from 'react';
-import {Linking, Platform} from 'react-native';
+import {Platform} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 
@@ -94,7 +94,6 @@ const TaskDetails = () => {
         ToastMessage(
           'Location permission is blocked. Please enable it in settings.',
         );
-        Linking.openSettings();
         return false;
       } else {
         ToastMessage('Please grant location permission to proceed');
