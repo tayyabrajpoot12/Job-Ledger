@@ -5,6 +5,7 @@ export const usersSlice = createSlice({
   initialState: {
     userData: {},
     location: {},
+    language: 'hr',
   },
   reducers: {
     setUserData(state, action) {
@@ -13,7 +14,12 @@ export const usersSlice = createSlice({
     setLocation(state, action) {
       state.location = action.payload;
     },
+    setLanguage(state, action) {
+      state.language = action.payload;
+    },
   },
 });
 
-export const {setUserData, setLocation} = usersSlice.actions;
+export const {setUserData, setLocation, setLanguage} = usersSlice.actions;
+
+export default usersSlice.reducer;

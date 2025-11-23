@@ -1,14 +1,17 @@
 import {useState} from 'react';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import {useNavigation} from '@react-navigation/native';
-import {Pressable, StyleSheet} from 'react-native';
+import {Pressable, StyleSheet, Switch, View} from 'react-native';
 import fonts from '../../../assets/fonts';
 import CustomText from '../../../components/CustomText';
 import Header from '../../../components/Header';
 import Icons from '../../../components/Icons';
 import ScreenWrapper from '../../../components/ScreenWrapper';
+
+import i18n from '../../../Language/i18n';
 import {setToken} from '../../../store/reducer/AuthConfig';
+import {setLanguage} from '../../../store/reducer/usersSlice';
 import {COLORS} from '../../../utils/COLORS';
 import LogoutModal from './molecules/LogoutModal';
 import UserCard from './molecules/UserCard';
@@ -22,6 +25,14 @@ const Settings = () => {
   const handleLogout = async () => {
     setLogoutModal(false);
     dispatch(setToken(''));
+  };
+
+  const language = useSelector(state => state.users.language);
+
+  const toggleLanguage = () => {
+    const newLang = language === 'hr' ? 'en' : 'hr';
+    dispatch(setLanguage(newLang));
+    i18n.changeLanguage(newLang);
   };
 
   return (
@@ -45,6 +56,29 @@ const Settings = () => {
           label={'Edit Profile'}
           fontFamily={fonts.medium}
           color={COLORS.primaryColor}
+        />
+      </Pressable>
+      <Pressable style={[styles.row, styles.row1]}>
+        <View style={styles.row2}>
+          <Icons
+            size={20}
+            name={'globe'}
+            family={'Feather'}
+            color={COLORS.primaryColor}
+          />
+          <CustomText
+            fontSize={15}
+            label={'Change Language'}
+            marginLeft={10}
+            color={COLORS.primaryColor}
+            fontFamily={fonts.medium}
+          />
+        </View>
+        <Switch
+          value={language === 'en'}
+          onValueChange={toggleLanguage}
+          trackColor={{false: COLORS.lightGray, true: COLORS.primaryColor}}
+          thumbColor={language === 'en' ? COLORS.white : COLORS.white}
         />
       </Pressable>
       <Pressable
@@ -96,6 +130,15 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.lightGray,
     marginTop: 12,
     paddingBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  row1: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  row2: {
     flexDirection: 'row',
     alignItems: 'center',
   },

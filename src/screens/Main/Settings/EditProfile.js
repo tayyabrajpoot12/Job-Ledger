@@ -40,6 +40,7 @@ const EditProfile = () => {
   const init = {
     firstName: userData?.firstName,
     lastName: userData?.lastName,
+    username: userData?.username,
     email: userData?.email,
     department: userData?.department,
     joiningDate: date,
@@ -57,51 +58,65 @@ const EditProfile = () => {
 
   const array = [
     {
-      id: 0,
+      id: 1,
       placeholder: 'First Name',
       value: state.firstName,
+      editable: true,
       onChange: text => setState({...state, firstName: text}),
     },
     {
-      id: 1,
+      id: 2,
       placeholder: 'Last Name',
       value: state.lastName,
+      editable: true,
       onChange: text => setState({...state, lastName: text}),
+    },
+    {
+      id: 3,
+      placeholder: 'User Name',
+      value: state.username,
+      editable: false,
+      onChange: text => setState({...state, username: text}),
     },
 
     {
-      id: 2,
+      id: 4,
       placeholder: 'Phone',
       value: state.phone,
+      editable: true,
       onChange: text => setState({...state, phone: text}),
     },
     {
-      id: 8,
+      id: 5,
       placeholder: 'Address',
       value: state.address,
     },
     {
-      id: 3,
+      id: 6,
       placeholder: 'Email',
       value: state.email,
+      editable: false,
       onChange: text => setState({...state, email: text}),
     },
     {
-      id: 4,
+      id: 7,
       placeholder: 'Department',
       value: state.department,
+      editable: false,
       onChange: text => setState({...state, department: text}),
     },
     {
-      id: 6,
+      id: 8,
       placeholder: 'Salary',
       value: state.salary,
+      editable: false,
       onChange: text => setState({...state, salary: text}),
     },
     {
-      id: 7,
+      id: 9,
       placeholder: '12/12/2000',
       value: state.joiningDate,
+      editable: false,
       onChange: text => setState({...state, joiningDate: text}),
     },
   ];
@@ -115,6 +130,7 @@ const EditProfile = () => {
         lat: state.lat,
         phone: state.phone,
         address: state.address,
+        username: state.username,
         lastName: state.lastName,
         firstName: state.firstName,
       };
@@ -168,7 +184,7 @@ const EditProfile = () => {
 
       <View style={className('pt-8 flex-1')}>
         {array.map(item =>
-          item?.id === 8 ? (
+          item?.id === 5 ? (
             <TouchableOpacity
               key={item?.id}
               style={styles.box}
@@ -179,11 +195,11 @@ const EditProfile = () => {
           ) : (
             <CustomInput
               key={item?.id}
-              placeholder={item.placeholder}
               value={item.value}
+              editable={item?.editable}
               onChangeText={item.onChange}
-              editable={item?.id > 2 ? false : true}
-              color={item?.id > 2 ? COLORS.gray2 : '#000'}
+              placeholder={item.placeholder}
+              color={item?.editable ? '#000' : COLORS.gray2}
             />
           ),
         )}

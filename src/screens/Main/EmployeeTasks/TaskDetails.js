@@ -65,9 +65,9 @@ const TaskDetails = () => {
           position => resolve(position.coords),
           error => reject(error),
           {
-            enableHighAccuracy: false,
+            enableHighAccuracy: true,
             timeout: 20000,
-            maximumAge: 10000,
+            maximumAge: 0,
             forceRequestLocation: true,
             showLocationDialog: true,
           },
@@ -385,26 +385,16 @@ const TaskDetails = () => {
           label={'Loading Summary...'}
         />
       ) : (
-        <>
-          <TaskSummary
-            timer={timer}
-            active={active}
-            loading={loading}
-            isRunning={isRunning}
-            timeSummary={timeSummary}
-            handlePunchInOut={handlePunchInOut}
-            salary={userData?.salary || 0}
-            hide={loader || task?.status === 'completed'}
-          />
-          {/* {task?.status !== 'completed' && timeSummary?.length > 0 && (
-            <CustomButton
-              loading={loader}
-              disabled={loader}
-              onPress={handleComplete}
-              title={'Complete Project'}
-            />
-          )} */}
-        </>
+        <TaskSummary
+          timer={timer}
+          active={active}
+          loading={loading}
+          isRunning={isRunning}
+          timeSummary={timeSummary}
+          handlePunchInOut={handlePunchInOut}
+          salary={userData?.salary || 0}
+          hide={loader || task?.status === 'completed'}
+        />
       )}
       <PunchModal
         reason={reason}

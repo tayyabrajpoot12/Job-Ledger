@@ -7,6 +7,7 @@ import CustomModal from '../../../../components/CustomModal';
 import CustomText from '../../../../components/CustomText';
 import {className} from '../../../../global-styles';
 import {COLORS} from '../../../../utils/COLORS';
+import {useTranslation} from 'react-i18next';
 
 const PunchModal = ({
   isVisible,
@@ -18,7 +19,8 @@ const PunchModal = ({
   reason,
   setReason,
 }) => {
-  const [keyboardHeight, set] = useState(new Animated.Value(0));
+  const {t} = useTranslation();
+  const [keyboardHeight] = useState(new Animated.Value(0));
 
   useEffect(() => {
     const keyboardWillShow = Keyboard.addListener('keyboardWillShow', event => {
@@ -41,6 +43,11 @@ const PunchModal = ({
     };
   }, []);
 
+  const message = t(
+    'You are {{distance}}m away from project location. Status will be marked as outside location.',
+    {distance},
+  );
+
   return (
     <CustomModal
       isVisible={isVisible}
@@ -57,8 +64,8 @@ const PunchModal = ({
             marginBottom={10}
           />
           <CustomText
-            label={`You are ${distance}m away from project location. Status will be marked as outside location.`}
             fontSize={12}
+            label={message}
             textAlign={'center'}
             alignSelf={'center'}
             marginTop={8}

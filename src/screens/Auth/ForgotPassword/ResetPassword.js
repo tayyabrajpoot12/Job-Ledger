@@ -29,7 +29,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const ResetPassword = ({navigation, route}) => {
-  const {email, resetToken} = route?.params;
+  const {username, resetToken} = route?.params;
   const [loading, setLoading] = useState(false);
 
   const handleSetNewPassword = async values => {
@@ -37,7 +37,7 @@ const ResetPassword = ({navigation, route}) => {
       setLoading(true);
 
       const res = await post('resetForgottenPassword', {
-        email,
+        username,
         resetToken,
         newPassword: values?.password,
       });

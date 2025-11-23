@@ -4,6 +4,7 @@ import fonts from '../assets/fonts';
 import {COLORS} from '../utils/COLORS';
 import CustomText from './CustomText';
 import Icons from './Icons';
+import {useTranslation} from 'react-i18next';
 
 const CustomInput = ({
   placeholder,
@@ -34,6 +35,8 @@ const CustomInput = ({
   backgroundColor,
   color = COLORS.black,
 }) => {
+  const {t} = useTranslation();
+
   const isError =
     error !== undefined && error !== null && error !== true && error !== '';
 
@@ -82,7 +85,7 @@ const CustomInput = ({
 
         <TextInput
           ref={ref}
-          placeholder={placeholder}
+          placeholder={t(placeholder)}
           style={[
             styles.input,
             {

@@ -240,22 +240,6 @@ const TaskSummary = ({
                 fontFamily={fonts.semiBold}
                 color={COLORS.primaryColor}
               />
-
-              {/* <View style={[styles.row, {width: '50%'}]}>
-                <CustomText
-                  fontSize={12}
-                  label={'Total Salary:'}
-                  fontFamily={fonts.semiBold}
-                />
-                <CustomText
-                  fontSize={12}
-                  marginLeft={10}
-                  numberOfLines={1}
-                  label={totalSalary}
-                  fontFamily={fonts.semiBold}
-                  color={COLORS.primaryColor}
-                />
-              </View> */}
             </View>
           </View>
           {totalHours === '0.00' && (

@@ -27,14 +27,6 @@ const Home = () => {
       name: 'Active Projects',
       value: stats?.active,
     },
-    // {
-    //   name: 'Pending Projects',
-    //   value: stats?.pending,
-    // },
-    // {
-    //   name: 'Completed Projects',
-    //   value: stats?.completed,
-    // },
   ];
 
   const {token} = useSelector(state => state.authConfigs);

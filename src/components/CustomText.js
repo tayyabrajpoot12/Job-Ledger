@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import {Text} from 'react-native';
 import fonts from '../assets/fonts';
 import {COLORS} from '../utils/COLORS';
@@ -33,6 +34,7 @@ const CustomText = ({
   children,
   letterSpacing,
 }) => {
+  const {t} = useTranslation();
   return (
     <Text
       numberOfLines={numberOfLines}
@@ -65,7 +67,7 @@ const CustomText = ({
         },
         textStyle,
       ]}>
-      {label}
+      {t(label)}
       {children}
     </Text>
   );

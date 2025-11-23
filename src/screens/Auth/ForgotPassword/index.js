@@ -16,10 +16,7 @@ import Header from '../../../components/Header';
 import {post} from '../../../Services/ApiRequest';
 
 const validationSchema = Yup.object().shape({
-  email: Yup.string()
-    .required('Email is required')
-    .email('Please enter a valid email address')
-    .label('Email'),
+  username: Yup.string().required('Username is required').label('Username'),
 });
 const ForgotPassword = () => {
   const navigation = useNavigation();
@@ -29,11 +26,11 @@ const ForgotPassword = () => {
     try {
       setLoading(true);
 
-      const res = await post('forgotPassword', {email: values?.email});
+      const res = await post('forgotPassword', {username: values?.username});
 
       if (res.data?.result) {
         ToastMessage(res.data?.message);
-        navigation.navigate('OTPScreen', {email: values?.email});
+        navigation.navigate('OTPScreen', {username: values?.username});
       }
 
       setLoading(false);
@@ -46,7 +43,7 @@ const ForgotPassword = () => {
 
   return (
     <ScreenWrapper
-      headerUnScrollable={() => <Header title={'Forgot Passoword'} />}>
+      headerUnScrollable={() => <Header title={'Forgot Password'} />}>
       <CustomText
         fontSize={22}
         marginTop={5}
@@ -56,13 +53,13 @@ const ForgotPassword = () => {
       />
       <CustomText
         label={
-          "Don't worry! It occurs. Please enter the email address linked with your account."
+          "Don't worry! It occurs. Please enter the username linked with your account."
         }
         color={COLORS.gray1}
         fontFamily={fonts.medium}
       />
       <Formik
-        initialValues={{email: ''}}
+        initialValues={{username: ''}}
         onSubmit={values => handleSendOTP(values)}
         validationSchema={validationSchema}>
         {({
@@ -75,14 +72,13 @@ const ForgotPassword = () => {
         }) => (
           <View style={className('mt-7')}>
             <CustomInput
-              placeholder={'Enter your email'}
-              keyboardType={'email-address'}
-              value={values.email}
-              onBlur={() => setFieldTouched('email')}
-              onChangeText={handleChange('email')}
-              error={touched.email && errors.email}
+              value={values.username}
+              placeholder={'Enter your username'}
+              onBlur={() => setFieldTouched('username')}
+              onChangeText={handleChange('username')}
+              error={touched.username && errors.username}
             />
-            <Error error={errors.email} visible={touched.email} />
+            <Error error={errors.username} visible={touched.username} />
 
             <CustomButton
               marginTop={20}

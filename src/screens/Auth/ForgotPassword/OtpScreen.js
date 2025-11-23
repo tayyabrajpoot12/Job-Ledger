@@ -16,7 +16,7 @@ import {ToastMessage} from '../../../utils/ToastMessage';
 const OTPScreen = ({route}) => {
   const navigation = useNavigation();
 
-  const email = route.params?.email;
+  const username = route.params?.username;
 
   const timerRef = useRef(null);
 
@@ -42,13 +42,13 @@ const OTPScreen = ({route}) => {
     try {
       setLoading(true);
 
-      const body = {email, otp};
+      const body = {username, otp};
 
       const response = await post('verifyForgotPasswordOtp', body);
 
       if (response.data?.result) {
         navigation.navigate('ResetPassword', {
-          email,
+          username,
           resetToken: response?.data?.resetToken,
         });
       }
@@ -64,7 +64,7 @@ const OTPScreen = ({route}) => {
       setTimer(59);
       startTimer();
       ToastMessage('OTP Sent Successfully');
-      await post('forgotPassword', {email});
+      await post('forgotPassword', {username});
     } catch (error) {
       ToastMessage(error.response?.data?.message);
     }

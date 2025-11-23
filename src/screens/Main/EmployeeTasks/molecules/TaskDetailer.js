@@ -57,53 +57,7 @@ const TaskDetailer = ({task}) => {
         color={COLORS.inputLabel}
         fontSize={12}
       />
-      {/* <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
-        <View style={{width: '33%'}}>
-          <CustomText
-            label="Total Budget"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <View style={styles.row}>
-            <Icons name={'dollar-sign'} family={'Feather'} top={-1} size={16} />
-            <CustomText
-              label={task?.budget}
-              fontFamily={fonts.semiBold}
-              fontSize={16}
-            />
-          </View>
-        </View>
-        <View style={{width: '33%'}}>
-          <CustomText
-            label="My Earning"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <View style={styles.row}>
-            <Icons name={'dollar-sign'} family={'Feather'} top={-1} size={16} />
-            <CustomText
-              label={task?.laborBudget}
-              fontFamily={fonts.semiBold}
-              fontSize={16}
-            />
-          </View>
-        </View>
-        <View style={{width: '33%'}}>
-          <CustomText
-            label="Material Cost"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <View style={styles.row}>
-            <Icons name={'dollar-sign'} family={'Feather'} top={-1} size={16} />
-            <CustomText
-              label={task?.materialCosts}
-              fontFamily={fonts.semiBold}
-              fontSize={16}
-            />
-          </View>
-        </View>
-      </View> */}
+
       <CustomText
         marginTop={10}
         label="Project Location"
@@ -128,35 +82,6 @@ const TaskDetailer = ({task}) => {
           label={task?.location?.address}
         />
       </TouchableOpacity>
-      {/* <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
-        <View style={{width: '50%'}}>
-          <CustomText
-            label="Start Date"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <CustomText
-            fontSize={13}
-            color={COLORS.black}
-            fontFamily={fonts.medium}
-            label={`${moment(task?.startDate).format('ddd DD MMM YYYY')}`}
-          />
-        </View>
-
-        <View style={{width: '50%'}}>
-          <CustomText
-            label="End Date"
-            fontFamily={fonts.medium}
-            color={COLORS.primaryColor}
-          />
-          <CustomText
-            fontSize={13}
-            color={COLORS.black}
-            fontFamily={fonts.medium}
-            label={`${moment(task?.endDate).format('ddd DD MMM YYYY')}`}
-          />
-        </View>
-      </View> */}
     </View>
   );
 };

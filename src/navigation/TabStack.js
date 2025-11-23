@@ -16,6 +16,7 @@ import {get} from '../Services/ApiRequest';
 import {setUserData} from '../store/reducer/usersSlice';
 import {COLORS} from '../utils/COLORS';
 import fonts from '../assets/fonts';
+import {useTranslation} from 'react-i18next';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,6 +32,7 @@ const TabIcon = ({name, family, focused}) => {
 };
 
 const TabStack = () => {
+  const {t} = useTranslation();
   const dispatch = useDispatch();
 
   const {token} = useSelector(state => state.authConfigs);
@@ -70,7 +72,7 @@ const TabStack = () => {
             <TabIcon focused={focused} name={'home'} />
           ),
         }}
-        name={'Home'}
+        name={t('Home')}
         component={Home}
       />
       <Tab.Screen
@@ -79,7 +81,7 @@ const TabStack = () => {
             <TabIcon focused={focused} name={'calendar'} />
           ),
         }}
-        name={'Schedule'}
+        name={t('Schedule')}
         component={Schedule}
       />
       <Tab.Screen
@@ -91,7 +93,7 @@ const TabStack = () => {
               family={'FontAwesome5'}
             />
           ),
-          tabBarLabel: 'Projects',
+          tabBarLabel: t('Projects'),
         }}
         name={'EmployeeTasks'}
         component={EmployeeTasks}
@@ -103,7 +105,7 @@ const TabStack = () => {
             <TabIcon name={'settings'} focused={focused} />
           ),
         }}
-        name={'Settings'}
+        name={t('Settings')}
         component={Settings}
       />
     </Tab.Navigator>

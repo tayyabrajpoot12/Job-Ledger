@@ -17,14 +17,10 @@ import {COLORS} from '../../../utils/COLORS';
 import {useNavigation} from '@react-navigation/native';
 import {post} from '../../../Services/ApiRequest';
 import {setToken} from '../../../store/reducer/AuthConfig';
-import {regEmail} from '../../../utils/constants';
 import {ToastMessage} from '../../../utils/ToastMessage';
 
 const validationSchema = Yup.object().shape({
-  email: Yup.string()
-    .required('Email is required')
-    .matches(regEmail, 'Please enter correct email')
-    .label('Email'),
+  username: Yup.string().required('Username is required').label('Username'),
   password: Yup.string()
     .trim()
     .required('Password is required')
@@ -42,7 +38,7 @@ const Login = () => {
       setIsLoading(true);
 
       const body = {
-        email: state?.email?.trim(),
+        username: state?.username?.trim(),
         password: state.password,
       };
 
@@ -73,7 +69,7 @@ const Login = () => {
       <CustomText label={'Enter your login details'} />
 
       <Formik
-        initialValues={{email: '', password: ''}}
+        initialValues={{username: '', password: ''}}
         onSubmit={values => handleLogin(values)}
         validationSchema={validationSchema}>
         {({
@@ -86,14 +82,13 @@ const Login = () => {
         }) => (
           <View style={className('mt-4')}>
             <CustomInput
-              placeholder={'Email'}
-              value={values.email}
-              keyboardType={'email-address'}
-              onBlur={() => setFieldTouched('email')}
-              onChangeText={handleChange('email')}
-              error={touched.email && errors.email}
+              placeholder={'Username'}
+              value={values.username}
+              onBlur={() => setFieldTouched('username')}
+              onChangeText={handleChange('username')}
+              error={touched.username && errors.username}
             />
-            <Error error={errors.email} visible={touched.email} />
+            <Error error={errors.username} visible={touched.username} />
             <CustomInput
               placeholder={'Password'}
               secureTextEntry
