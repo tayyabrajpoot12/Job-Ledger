@@ -72,10 +72,7 @@ const TaskSummary = ({
   salary,
   hide = false,
 }) => {
-  const {totalHours, redHours, greenHours} = getTotalHoursAndSalary(
-    timeSummary,
-    salary,
-  );
+  const {totalHours} = getTotalHoursAndSalary(timeSummary, salary);
 
   return (
     <View>
@@ -160,7 +157,7 @@ const TaskSummary = ({
             </View>
             <View style={styles.width25}>
               <CustomText
-                label={entry?.timeIn}
+                label={' ' + entry?.timeIn}
                 fontFamily={fonts.regular}
                 fontSize={11}
                 color={COLORS.inputLabel}
@@ -168,7 +165,7 @@ const TaskSummary = ({
             </View>
             <View style={styles.width25}>
               <CustomText
-                label={entry?.timeOut}
+                label={' ' + entry?.timeOut}
                 fontFamily={fonts.regular}
                 fontSize={11}
                 color={COLORS.inputLabel}

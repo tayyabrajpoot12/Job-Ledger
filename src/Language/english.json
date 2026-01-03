@@ -99,5 +99,14 @@
   "Department": "Department",
   "Salary": "Salary",
   "Save Changes": "Save Changes",
-  "Profile updated!": "Profile updated!"
+  "Profile updated!": "Profile updated!",
+  "I took 0 break": "I took 0 break",
+  "I took 1 break": "I took 1 break",
+  "I took 2 break": "I took 2 break",
+  "Please select the number of breaks you took today.": "Please select the number of breaks you took today.",
+  "Share Something": "Share Something",
+  "Share Something!": "Share Something!",
+  "Please share something about it.": "Please share something about it.",
+  "Type here...": "Type here...",
+  "Choose break": "Choose break"
 }

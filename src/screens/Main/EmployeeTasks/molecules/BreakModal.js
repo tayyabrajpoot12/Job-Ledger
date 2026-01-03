@@ -2,24 +2,35 @@ import {useEffect, useState} from 'react';
 import {Animated, Keyboard, StyleSheet, View} from 'react-native';
 import fonts from '../../../../assets/fonts';
 import CustomButton from '../../../../components/CustomButton';
-import CustomInput from '../../../../components/CustomInput';
+import CustomDropdown from '../../../../components/CustomDropDown';
 import CustomModal from '../../../../components/CustomModal';
 import CustomText from '../../../../components/CustomText';
 import {className} from '../../../../global-styles';
 import {COLORS} from '../../../../utils/COLORS';
-import {useTranslation} from 'react-i18next';
 
-const PunchModal = ({
+const options = [
+  {
+    _id: '30',
+    title: 'I took 0 break',
+  },
+  {
+    _id: '15',
+    title: 'I took 1 break',
+  },
+  {
+    _id: '0',
+    title: 'I took 2 break',
+  },
+];
+
+const BreakModal = ({
   isVisible,
   onDisable,
-  distance,
   loading,
   onPress,
-  heading,
-  reason,
-  setReason,
+  breakVal,
+  setBreakVal,
 }) => {
-  const {t} = useTranslation();
   const [keyboardHeight] = useState(new Animated.Value(0));
 
   useEffect(() => {
@@ -43,11 +54,6 @@ const PunchModal = ({
     };
   }, []);
 
-  const message = t(
-    'You are {{distance}}m away from project location. Status will be marked as outside location.',
-    {distance},
-  );
-
   return (
     <CustomModal
       isVisible={isVisible}
@@ -55,46 +61,44 @@ const PunchModal = ({
       <Animated.View style={{marginBottom: keyboardHeight}}>
         <View style={[styles.mainContainer]}>
           <CustomText
-            label={heading || 'Please Wait!'}
             fontSize={20}
-            fontFamily={fonts.medium}
             alignSelf={'center'}
             textAlign={'center'}
+            label={'Please Wait!'}
+            fontFamily={fonts.medium}
             textTransform={'capitalize'}
-            marginBottom={10}
           />
           <CustomText
-            fontSize={12}
-            label={message}
+            marginBottom={12}
             textAlign={'center'}
             alignSelf={'center'}
-            marginTop={8}
-            marginBottom={12}
+            label={'Please select the number of breaks you took today.'}
           />
-          <CustomInput
-            multiline
-            value={reason}
-            onChangeText={e => setReason(e)}
-            placeholder={'Type reason for late...'}
+          <CustomDropdown
+            data={options}
+            value={breakVal}
+            setValue={setBreakVal}
+            placeholder={'Choose break'}
           />
+
           <View style={[className('align-center mt-2'), {width: '100%'}]}>
             <CustomButton
+              height={45}
               title={'Proceed'}
               marginBottom={10}
-              onPress={onPress}
-              customText={{fontFamily: fonts.medium}}
-              height={45}
               loading={loading}
-              disabled={reason?.trim() === '' || loading}
+              disabled={!breakVal || loading}
+              onPress={() => onPress(breakVal)}
+              customText={{fontFamily: fonts.medium}}
             />
             <CustomButton
+              height={45}
               title="Cancel"
+              color={'#000'}
               marginBottom={10}
-              customText={{fontFamily: fonts.medium}}
               onPress={onDisable}
               backgroundColor={'transparent'}
-              color={'#000'}
-              height={45}
+              customText={{fontFamily: fonts.medium}}
             />
           </View>
         </View>
@@ -103,7 +107,7 @@ const PunchModal = ({
   );
 };
 
-export default PunchModal;
+export default BreakModal;
 
 const styles = StyleSheet.create({
   mainContainer: {

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import {useRoute} from '@react-navigation/native';
 import moment from 'moment';
 import React, {useEffect, useRef, useState} from 'react';
@@ -8,6 +7,7 @@ import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 
 import {useSelector} from 'react-redux';
 import fonts from '../../../assets/fonts';
+import CustomButton from '../../../components/CustomButton';
 import CustomText from '../../../components/CustomText';
 import Header from '../../../components/Header';
 import ScreenWrapper from '../../../components/ScreenWrapper';
@@ -15,9 +15,11 @@ import {get, post, put} from '../../../Services/ApiRequest';
 import {COLORS} from '../../../utils/COLORS';
 import constants from '../../../utils/constants';
 import {ToastMessage} from '../../../utils/ToastMessage';
-import PunchModal from './molecules/PunchModal';
+import LateModal from './molecules/LateModal';
+import ShareModal from './molecules/ShareModal';
 import TaskDetailer from './molecules/TaskDetailer';
 import TaskSummary from './molecules/TaskSummary';
+import BreakModal from './molecules/BreakModal';
 
 const TaskDetails = () => {
   const {params} = useRoute();
@@ -35,12 +37,16 @@ const TaskDetails = () => {
   const [active, setActive] = useState(1);
   const [reason, setReason] = useState('');
   const [action, setAction] = useState('');
-  const [loader, setLoader] = useState(false);
   const [distance, setDistance] = useState(0);
+  const [loader, setLoader] = useState(false);
+  const [breakVal, setBreakVal] = useState('');
   const [loading, setLoading] = useState(false);
+  const [shareInfo, setShareInfo] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [timeSummary, setTimeSummary] = useState([]);
   const [pageLoader, setPageLoader] = useState(true);
+  const [shareModal, setShareModal] = useState(false);
+  const [breakModal, setBreakModal] = useState(false);
   const [modalLoader, setModalLoader] = useState(false);
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -154,6 +160,7 @@ const TaskDetails = () => {
             : '--',
           punchStatus: entry?.punchStatus,
           totalHours: entry?.totalHours,
+          shareSomething: entry?.shareSomething,
         }));
         setTimeSummary(formattedSummary);
       }
@@ -192,6 +199,8 @@ const TaskDetails = () => {
 
       const actionToSend = actionPunch || action;
 
+      let endDate = new Date();
+
       const apiData = {
         employeeId: employeeId,
         projectId: task?._id,
@@ -212,6 +221,11 @@ const TaskDetails = () => {
         }
       }
 
+      if (actionToSend === 'punch_out' && breakVal) {
+        apiData.breakTime = parseInt(breakVal);
+        endDate = moment().add(parseInt(breakVal), 'minutes').toDate();
+      }
+
       if (timeSummary?.length === 0 && !task?.startDate) {
         await put(`updateProject/${task?._id}`, {
           startDate: new Date().toISOString(),
@@ -223,7 +237,7 @@ const TaskDetails = () => {
 
       if (actionToSend === 'punch_out') {
         await put(`updateProject/${task?._id}`, {
-          endDate: new Date().toISOString(),
+          endDate: endDate.toISOString(),
           adminId: adminId,
         });
       }
@@ -249,6 +263,7 @@ const TaskDetails = () => {
         );
       }
       setReason('');
+      setBreakVal('');
       setLoading(false);
       setShow(false);
       setModalLoader(false);
@@ -256,6 +271,33 @@ const TaskDetails = () => {
       console.log(error.response?.data, 'in add');
       setLoading(false);
       setModalLoader(false);
+    }
+  };
+
+  const handleBreakSelection = async selectedBreakVal => {
+    try {
+      setBreakVal(selectedBreakVal);
+      setBreakModal(false);
+
+      const userLocation = await getLocation();
+      const dis = calculateDistance(
+        userLocation.latitude,
+        userLocation.longitude,
+        task?.location?.lat || 0,
+        task?.location?.lng || 0,
+      );
+
+      setDistance(dis);
+
+      if (Math.round(dis) > 100) {
+        setShow(true);
+        return;
+      }
+
+      handleAdd('green', 'punch_out');
+    } catch (error) {
+      console.error('Error in break selection:', error);
+      setLoading(false);
     }
   };
 
@@ -282,6 +324,12 @@ const TaskDetails = () => {
         task?.location?.lng || 0,
       );
 
+      if (punchAction === 'punch_out') {
+        setBreakModal(true);
+        setLoading(false);
+        return;
+      }
+
       if (Math.round(dis) > 100) {
         setLoading(false);
         setDistance(dis);
@@ -296,47 +344,25 @@ const TaskDetails = () => {
     }
   };
 
-  // const handleComplete = async () => {
-  //   try {
-  //     if (timeSummary?.length === 0) {
-  //       return ToastMessage('Please add at least one time punch in');
-  //     }
+  const handleShare = async () => {
+    try {
+      setLoader(true);
+      const recordId = timeSummary[0]?.id;
 
-  //     if (active === 2) {
-  //       return ToastMessage('Please Punch out before complete project');
-  //     }
+      await put('editSummary', {
+        recordId,
+        shareSomething: shareInfo,
+      });
 
-  //     setLoader(true);
-
-  //     const hasPermission = await requestLocationPermission();
-  //     if (!hasPermission) {
-  //       return;
-  //     }
-
-  //     const userLocation = await getLocation();
-
-  //     const body = {
-  //       projectId: task?._id,
-  //       location: {lat: userLocation?.latitude, lng: userLocation?.longitude},
-  //       completedBy: employeeId,
-  //       completionNotes: '',
-  //       adminId: adminId,
-  //     };
-
-  //     const res = await post('/completeProjectt', body);
-
-  //     if (res.data?.result) {
-  //       ToastMessage(res?.data?.message);
-  //       navigation.goBack();
-  //     }
-
-  //     setLoader(false);
-  //   } catch (error) {
-  //     ToastMessage(error?.response?.data?.message);
-  //     setLoader(false);
-  //     console.log(error, 'in complete project');
-  //   }
-  // };
+      setShareInfo('');
+      setShareModal(false);
+      setLoader(false);
+      getTimeSummary();
+    } catch (error) {
+      setLoader(false);
+      console.log(error, 'in share something');
+    }
+  };
 
   const fetchData = async () => {
     if (moment(task?.startDate).isAfter(moment())) {
@@ -371,6 +397,9 @@ const TaskDetails = () => {
     };
   }, []);
 
+  const canShare =
+    active === 2 && timeSummary?.length > 0 && !timeSummary[0]?.shareSomething;
+
   return (
     <ScreenWrapper
       headerUnScrollable={() => <Header title={'Project Details'} />}
@@ -391,12 +420,20 @@ const TaskDetails = () => {
           loading={loading}
           isRunning={isRunning}
           timeSummary={timeSummary}
-          handlePunchInOut={handlePunchInOut}
           salary={userData?.salary || 0}
-          hide={loader || task?.status === 'completed'}
+          handlePunchInOut={handlePunchInOut}
+          hide={task?.status === 'completed'}
         />
       )}
-      <PunchModal
+      {canShare && (
+        <CustomButton
+          marginTop={20}
+          marginBottom={30}
+          title={'Share Something'}
+          onPress={() => setShareModal(true)}
+        />
+      )}
+      <LateModal
         reason={reason}
         isVisible={show}
         setReason={setReason}
@@ -407,6 +444,24 @@ const TaskDetails = () => {
           setModalLoader(true);
           handleAdd('red');
         }}
+      />
+      <BreakModal
+        breakVal={breakVal}
+        isVisible={breakModal}
+        setBreakVal={setBreakVal}
+        onPress={handleBreakSelection}
+        onDisable={() => {
+          setBreakModal(false);
+          setLoading(false);
+        }}
+      />
+      <ShareModal
+        loading={loader}
+        value={shareInfo}
+        onPress={handleShare}
+        isVisible={shareModal}
+        setValue={setShareInfo}
+        onDisable={() => setShareModal(false)}
       />
     </ScreenWrapper>
   );

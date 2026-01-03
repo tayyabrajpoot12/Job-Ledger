@@ -1,18 +1,16 @@
-import React, { useState } from "react";
+import React, {useState} from 'react';
 import {
-  TouchableOpacity,
   LayoutAnimation,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
+  TouchableOpacity,
   UIManager,
   View,
-} from "react-native";
-
-import CustomText from "./CustomText";
-import Icons from "./Icons";
-
-import { COLORS } from "../utils/COLORS";
-import fonts from "../assets/fonts";
+} from 'react-native';
+import CustomText from './CustomText';
+import Icons from './Icons';
+import fonts from '../assets/fonts';
+import {COLORS} from '../utils/COLORS';
 
 UIManager.setLayoutAnimationEnabledExperimental &&
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -26,15 +24,15 @@ const CustomDropdown = ({
   error,
   withLabel,
 }) => {
+  const [text, setText] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [text, setText] = useState("");
 
   const toggleDropdown = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsOpen(!isOpen);
   };
 
-  const selectOption = (option) => {
+  const selectOption = option => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     if (option?._id) {
       setValue(option?._id);
@@ -60,26 +58,23 @@ const CustomDropdown = ({
           styles.dropdownMainContainer,
           {
             marginBottom: error ? 5 : 15,
-            borderColor: error ? COLORS.red : COLORS.inputBg,
-            borderRadius: isOpen ? 10 : 100,
+            borderColor: error ? COLORS.red : COLORS.lightGray,
           },
-        ]}
-      >
+        ]}>
         <TouchableOpacity
           activeOpacity={0.6}
           style={styles.container}
-          onPress={toggleDropdown}
-        >
+          onPress={toggleDropdown}>
           <CustomText
+            alignSelf={'center'}
             label={text || value || placeholder}
-            fontSize={12}
-            color={value?.length ? COLORS.black : COLORS.inputLabel}
+            color={value?.length ? COLORS.black : COLORS.gray}
           />
           {!showIcon ? (
             <Icons
-              style={{ color: COLORS.gray, fontSize: 20 }}
+              style={{color: COLORS.gray, fontSize: 20}}
               family="Entypo"
-              name={isOpen ? "chevron-up" : "chevron-down"}
+              name={isOpen ? 'chevron-up' : 'chevron-down'}
             />
           ) : (
             <View />
@@ -90,14 +85,12 @@ const CustomDropdown = ({
           <ScrollView
             scrollEnabled
             nestedScrollEnabled
-            showsVerticalScrollIndicator={false}
-          >
+            showsVerticalScrollIndicator={false}>
             {data?.map((option, i) => (
               <TouchableOpacity
                 style={styles.list}
                 key={i}
-                onPress={() => selectOption(option)}
-              >
+                onPress={() => selectOption(option)}>
                 <CustomText
                   label={option?._id ? option.title : option}
                   fontSize={12}
@@ -124,21 +117,23 @@ const CustomDropdown = ({
 export default CustomDropdown;
 const styles = StyleSheet.create({
   dropdownMainContainer: {
-    width: "100%",
+    width: '100%',
     maxHeight: 200,
-    overflow: "scroll",
+    overflow: 'scroll',
     borderWidth: 1,
-    backgroundColor: COLORS.lightGray,
+    borderColor: COLORS.red,
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
   },
   container: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    width: "100%",
+    width: '100%',
     height: 52,
-    backgroundColor: COLORS.lightGray,
-    overflow: "scroll",
+    backgroundColor: COLORS.white,
+    overflow: 'scroll',
   },
   list: {
     borderTopWidth: 1,

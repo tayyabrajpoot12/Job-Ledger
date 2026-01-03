@@ -99,5 +99,14 @@
   "Department": "Odjel",
   "Salary": "Plaća",
   "Save Changes": "Spremi promjene",
-  "Profile updated!": "Profil je ažuriran!"
+  "Profile updated!": "Profil je ažuriran!",
+  "I took 0 break": "Uzeo sam 0 pauza",
+  "I took 1 break": "Uzeo sam 1 pauzu",
+  "I took 2 break": "Uzeo sam 2 pauze",
+  "Please select the number of breaks you took today.": "Molimo odaberite broj pauza koje ste danas uzeli.",
+  "Share Something": "Podijeli nešto",
+  "Share Something!": "Podijeli nešto!",
+  "Please share something about it.": "Molimo podijelite nešto o tome.",
+  "Type here...": "Upišite ovdje...",
+  "Choose break": "Odaberite pauzu"
 }

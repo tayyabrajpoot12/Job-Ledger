@@ -1,0 +1,114 @@
+import {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Animated, Keyboard, StyleSheet, View} from 'react-native';
+import fonts from '../../../../assets/fonts';
+import CustomButton from '../../../../components/CustomButton';
+import CustomInput from '../../../../components/CustomInput';
+import CustomModal from '../../../../components/CustomModal';
+import CustomText from '../../../../components/CustomText';
+import {className} from '../../../../global-styles';
+import {COLORS} from '../../../../utils/COLORS';
+
+const LateModal = ({
+  isVisible,
+  onDisable,
+  distance,
+  loading,
+  onPress,
+  reason,
+  setReason,
+}) => {
+  const {t} = useTranslation();
+  const [keyboardHeight] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    const keyboardWillShow = Keyboard.addListener('keyboardWillShow', event => {
+      Animated.timing(keyboardHeight, {
+        duration: event.duration,
+        toValue: event.endCoordinates.height,
+        useNativeDriver: false,
+      }).start();
+    });
+    const keyboardWillHide = Keyboard.addListener('keyboardWillHide', event => {
+      Animated.timing(keyboardHeight, {
+        duration: event.duration,
+        toValue: 0,
+        useNativeDriver: false,
+      }).start();
+    });
+    return () => {
+      keyboardWillShow.remove();
+      keyboardWillHide.remove();
+    };
+  }, []);
+
+  const message = t(
+    'You are {{distance}}m away from project location. Status will be marked as outside location.',
+    {distance},
+  );
+
+  return (
+    <CustomModal
+      isVisible={isVisible}
+      onDisable={loading ? () => '' : onDisable}>
+      <Animated.View style={{marginBottom: keyboardHeight}}>
+        <View style={[styles.mainContainer]}>
+          <CustomText
+            fontSize={20}
+            alignSelf={'center'}
+            textAlign={'center'}
+            label={'Please Wait!'}
+            fontFamily={fonts.medium}
+            textTransform={'capitalize'}
+          />
+          <CustomText
+            label={message}
+            textAlign={'center'}
+            alignSelf={'center'}
+            marginBottom={12}
+          />
+          <CustomInput
+            multiline
+            value={reason}
+            onChangeText={e => setReason(e)}
+            placeholder={'Type reason for late...'}
+          />
+          <View style={[className('align-center mt-2'), {width: '100%'}]}>
+            <CustomButton
+              title={'Proceed'}
+              marginBottom={10}
+              onPress={onPress}
+              customText={{fontFamily: fonts.medium}}
+              height={45}
+              loading={loading}
+              disabled={reason?.trim() === '' || loading}
+            />
+            <CustomButton
+              title="Cancel"
+              marginBottom={10}
+              customText={{fontFamily: fonts.medium}}
+              onPress={onDisable}
+              backgroundColor={'transparent'}
+              color={'#000'}
+              height={45}
+            />
+          </View>
+        </View>
+      </Animated.View>
+    </CustomModal>
+  );
+};
+
+export default LateModal;
+
+const styles = StyleSheet.create({
+  mainContainer: {
+    padding: 10,
+    borderRadius: 20,
+    paddingHorizontal: 28,
+    marginHorizontal: 24,
+    paddingTop: 26,
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+  },
+});
